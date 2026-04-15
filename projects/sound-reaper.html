@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sound Reaper | 陈诺作品集</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="orb orb-a" aria-hidden="true"></div>
+  <div class="orb orb-b" aria-hidden="true"></div>
+
+  <main class="layout">
+    <section class="panel reveal">
+      <p class="label">Featured Project</p>
+      <h1>音乐战斗游戏“Sound Reaper”</h1>
+      <p class="lead">采用3D俯视视角的实时战斗系统。核心玩法将音乐节奏同步机制与动作战斗系统融合。</p>
+
+      <div class="video-placeholder">
+        <video class="feature-video" controls preload="metadata">
+          <source src="../assets/sound-reaper-demo.mp4" type="video/mp4" />
+          当前浏览器无法播放该视频，请使用下方下载链接查看。
+        </video>
+        <p class="media-tip">
+          若出现黑屏但有声音，通常是视频编码兼容问题。可先
+          <a class="doc-link" href="../assets/sound-reaper-demo.mp4" download>下载原视频</a>。
+        </p>
+      </div>
+
+      <div class="article-stack">
+        <article class="project">
+          <h4>项目信息</h4>
+          <p><strong>时间：</strong>2025年10月 - 2025年11月</p>
+          <p><strong>项目说明：</strong>本游戏属“节奏动作（Rhythm-Action）”类型，采用3D俯视视角的实时战斗系统。核心玩法将音乐节奏同步机制与动作战斗系统融合，辅以 Roguelike 式关卡生成与角色构筑机制，旨在创造兼具听觉节奏反馈与操作策略深度的游戏体验。</p>
+          <p><strong>详细文档链接：</strong><a class="doc-link" href="https://www.kdocs.cn/l/cgjx6C7TC927" target="_blank" rel="noopener noreferrer">【金山文档 | WPS云文档】https://www.kdocs.cn/l/cgjx6C7TC927</a></p>
+        </article>
+
+        <article class="project">
+          <h4>游戏内容</h4>
+          <p>本作以“节奏即力量”为核心理念，将音乐律动与实时动作战斗深度融合。玩家在激昂的节拍中通过精准的攻击与闪避来建立节奏连击，节奏表现直接影响战斗强度与游戏节奏的流动性。</p>
+        </article>
+
+        <article class="project core-tech-article">
+          <h4>核心技术</h4>
+          <figure class="inline-media tech-inline-media">
+            <img class="render-image" src="../assets/sound-reaper-architecture.png" alt="Sound Reaper 系统架构图" />
+            <figcaption>系统流程与模块关系图</figcaption>
+          </figure>
+          <ul class="bullet-list">
+            <li><strong>节奏判定驱动的战斗系统（Rhythm-Driven Combat）：</strong>通过 BPM 计算每拍时间，并在玩家输入时进行时间余数判断，实现 Perfect / Good / Miss 三档节奏判定。判定结果直接影响攻击伤害、技能冷却和连击倍率，使音乐节奏与战斗反馈形成强耦合机制。</li>
+            <li><strong>基于广播机制的 RhythmMultiplier 事件系统：</strong>RhythmMultiplier 同时承担输入监听与事件广播功能。玩家攻击或闪避输入会触发节奏判定，并向不同系统广播事件，使角色、技能与攻击逻辑能够根据判定结果动态响应。</li>
+            <li><strong>Modifier 中间层实现的高解耦强化架构：</strong>构建 Modifier 系统作为战斗逻辑中间层，将输入、子弹生成和伤害结算进行解耦。强化效果通过注册监听机制动态接入，使新强化能够在不修改核心战斗代码的情况下叠加生效。</li>
+            <li><strong>Roguelike 随机强化生成系统：</strong>关卡结束后从强化数据库按稀有度概率随机抽取强化（60%/30%/10%），并自动映射到 UI 选项。强化分为数值型（NumEn）与行为型（BehEn），支持本局持续叠加，形成 Roguelike 构筑机制。</li>
+            <li><strong>Unreal Engine 战斗系统优化与 AI 实现：</strong>系统整合了多种 Unreal 技术：行为树（Behavior Tree）、Boss 两阶段 AI、对象池（Object Pool）优化子弹生成性能、Niagara 特效系统实现战斗视觉反馈、以及射线检测与碰撞体检测完成技能与近战判定。</li>
+          </ul>
+        </article>
+      </div>
+
+      <a class="project-link" href="../index.html#projects">返回我的项目</a>
+    </section>
+  </main>
+</body>
+</html>
