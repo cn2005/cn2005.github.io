@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>渲染项目 | 陈诺作品集</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <canvas class="field-canvas" data-field-canvas aria-hidden="true"></canvas>
+  <div class="scanline" aria-hidden="true"></div>
+  <main class="case-page">
+    <a class="back-link" href="../index.html#projects">返回作品</a>
+
+    <header class="case-hero single">
+      <div class="case-title">
+        <p class="eyebrow">Rendering Projects</p>
+        <h1>渲染项目</h1>
+        <p class="case-lead">侧重画面表达、光照设计、材质表现和性能平衡的项目集合。</p>
+      </div>
+    </header>
+
+    <section class="project-list" aria-label="渲染项目列表">
+      <article class="project-item">
+        <h3>实时光照场景实验</h3>
+        <p>对比不同光照模型、阴影策略和后处理链路，整理画面提升方案。</p>
+      </article>
+      <article class="project-item">
+        <h3>PBR 材质表现测试</h3>
+        <p>验证粗糙度、金属度材质在多环境下的表现一致性与艺术可控性。</p>
+      </article>
+      <article class="project-item">
+        <h3>风格化画面调色</h3>
+        <p>围绕目标风格搭建色调映射方案，支持可复用的 LUT 调整流程。</p>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

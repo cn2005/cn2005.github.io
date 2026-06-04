@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="GAMES202 作业 5 技术拆解：EXR 序列降噪、联合双边、重投影、temporal clamp 与 EMA。" />
+  <title>作业 5：单帧滤波与时域累积降噪 | 陈诺作品集</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <canvas class="field-canvas" data-field-canvas aria-hidden="true"></canvas>
+  <div class="scanline" aria-hidden="true"></div>
+
+  <main class="case-page tech-detail-page">
+    <a class="back-link" href="high-quality-rendering.html#assignment-5">返回高质量实时渲染</a>
+
+    <header class="case-hero">
+      <div class="case-title reveal">
+        <p class="eyebrow">Assignment 5 / Denoising</p>
+        <h1>单帧滤波与时域累积降噪</h1>
+        <p class="case-lead">
+          面向低采样渲染序列，使用 beauty、depth、normal、position、ID 和相机矩阵作为引导信息。
+          单帧阶段保护几何边界，时域阶段通过重投影和历史裁剪提高画面稳定性。
+        </p>
+      </div>
+      <div class="case-meta reveal">
+        <div><span>Path</span><strong>D:\Games202Homework\homework5</strong></div>
+        <div><span>Input</span><strong>EXR Beauty / Depth / Normal / Position / ID</strong></div>
+        <div><span>Filter</span><strong>Joint Bilateral</strong></div>
+        <div><span>Temporal</span><strong>Reprojection / Clamp / EMA</strong></div>
+      </div>
+    </header>
+
+    <section class="tech-detail-layout">
+      <aside class="tech-toc reveal" aria-label="页面目录">
+        <a href="#idea">核心思路</a>
+        <a href="#pipeline">实现管线</a>
+        <a href="#code">代码示例</a>
+        <a href="#notes">技术要点</a>
+      </aside>
+
+      <div class="tech-detail-content">
+        <section id="idea" class="article-card reveal">
+          <p class="small-label">Concept</p>
+          <h2>谁可以互相借样本</h2>
+          <p>
+            降噪的难点不是“平均”，而是判断哪些像素属于同一表面和同一材质区域。
+            所以滤波权重不能只看颜色，还要看 depth、normal、position 和 object/material ID。
+            单帧结果再进入时域累积，让随机噪声被多帧平均，但历史颜色必须被 clamp，避免拖影和鬼影。
+          </p>
+        </section>
+
+        <section id="pipeline" class="article-grid">
+          <article class="article-card reveal">
+            <p class="small-label">Spatial</p>
+            <h3>联合双边单帧滤波</h3>
+            <p>
+              对每个像素在半径内取邻域样本，权重由空间距离、颜色差、法线夹角、平面距离和 ID 一起决定。
+              同一表面内部强平滑，轮廓和材质边界弱平滑或拒绝。
+            </p>
+          </article>
+          <article class="article-card reveal">
+            <p class="small-label">Temporal</p>
+            <h3>重投影与历史累积</h3>
+            <p>
+              使用当前像素 world position 投影到上一帧屏幕空间，读取历史 accumulated color。
+              如果深度、法线或 ID 不一致，则历史无效；有效历史经过邻域颜色盒裁剪后做 EMA。
+            </p>
+          </article>
+        </section>
+
+        <section id="code" class="article-card reveal">
+          <p class="small-label">Important Code</p>
+          <h2>降噪器数据流</h2>
+          <p>
+            当前源码保留了作业的核心结构和 TODO 位点：先 filter current frame，再重投影历史，
+            最后做 temporal accumulation。详情页把应该填入这些位置的算法讲清楚。
+          </p>
+<pre class="code-block"><code>Buffer2D&lt;Float3&gt; Denoiser::ProcessFrame(const FrameInfo &frameInfo) {
+  Buffer2D&lt;Float3&gt; filteredColor = Filter(frameInfo);
+
+  if (m_useTemportal) {
+    Reprojection(frameInfo);
+    TemporalAccumulation(filteredColor);
+  } else {
+    Init(frameInfo, filteredColor);
+  }
+
+  Maintain(frameInfo);
+  m_useTemportal = true;
+  return m_accColor;
+}</code></pre>
+        </section>
+
+        <section class="article-card reveal">
+          <p class="small-label">Pseudo Code</p>
+          <h2>联合双边权重设计</h2>
+<pre class="code-block"><code>weight =
+  spatialGaussian(distance(p, q), sigmaCoord) *
+  depthPlaneWeight(position, normal) *
+  normalGaussian(1 - dot(Np, Nq), sigmaNormal) *
+  colorGaussian(length(Cp - Cq), sigmaColor) *
+  sameObjectOrMaterialId(p, q);
+
+filtered[p] = sum(weight * beauty[q]) / sum(weight);</code></pre>
+        </section>
+
+        <section id="notes" class="article-grid">
+          <article class="article-card reveal">
+            <p class="small-label">Clamp</p>
+            <h3>Temporal Clamp</h3>
+            <p>
+              取当前滤波结果周围 3x3 或 5x5 邻域的颜色范围，将历史颜色限制在这个范围内。
+              这样可以减少物体移动、遮挡变化或历史错误带来的拖影。
+            </p>
+          </article>
+          <article class="article-card reveal">
+            <p class="small-label">Video</p>
+            <h3>演示视频</h3>
+            <div class="video-embed detail-video">
+              <iframe
+                src="https://player.bilibili.com/player.html?isOutside=true&amp;bvid=BV1H1LS6SEqs&amp;page=1&amp;high_quality=1&amp;autoplay=0"
+                title="Games202hw3SSR+TAA+联合双边滤波"
+                loading="lazy"
+                allowfullscreen
+              ></iframe>
+              <div class="video-caption">
+                <span>Bilibili Video</span>
+                <strong>Games202hw3SSR+TAA+联合双边滤波</strong>
+                <a
+                  class="project-link"
+                  href="https://www.bilibili.com/video/BV1H1LS6SEqs/?share_source=copy_web&amp;vd_source=192a4a2488c9b2971d90c4b39f9e472b"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >在 Bilibili 打开</a>
+              </div>
+            </div>
+          </article>
+        </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
