@@ -4,86 +4,136 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="GAMES202 作业 1 技术拆解：Shadow Map、PCF/PCSS、斜率 bias 与球谐环境光。" />
-  <title>作业 1：实时阴影与球谐环境光 | 陈诺作品集</title>
+  <meta name="theme-color" content="#0a0a0b" />
+  <title>作业 1：实时阴影与球谐环境光 · 陈诺</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ccircle cx='32' cy='32' r='12' fill='%23f0643a'/%3E%3C/svg%3E" />
+  <script>document.documentElement.classList.add("js");</script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" media="print" onload="this.media='all'" />
   <link rel="stylesheet" href="../styles.css" />
   <script src="../script.js" defer></script>
 </head>
-<body>
-  <canvas class="field-canvas" data-field-canvas aria-hidden="true"></canvas>
-  <div class="scanline" aria-hidden="true"></div>
+<body id="top">
+  <div class="curtain" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="progress" aria-hidden="true"></div>
+  <a class="skip" href="#main">跳到主要内容</a>
 
-  <main class="case-page tech-detail-page">
-    <a class="back-link" href="high-quality-rendering.html#assignment-1">返回高质量实时渲染</a>
+  <header class="site-header" data-header>
+    <a class="brand" href="../index.html" aria-label="陈诺 · 回到首页">
+      <span class="brand-name">陈诺</span>
+      <span class="brand-role">Chen Nuo — Technical Artist</span>
+    </a>
+    <nav class="nav" aria-label="主导航">
+      <a class="roll" href="../index.html#work"><span data-text="作品">作品</span></a>
+      <a class="roll" href="../index.html#about"><span data-text="关于">关于</span></a>
+      <a class="roll" href="../index.html#method"><span data-text="方法">方法</span></a>
+      <a class="roll" href="../index.html#contact"><span data-text="联系">联系</span></a>
+    </nav>
+  </header>
 
-    <header class="case-hero">
-      <div class="case-title reveal">
-        <p class="eyebrow">Assignment 1 / Shadow Mapping</p>
-        <h1>实时阴影与球谐环境光</h1>
-        <p class="case-lead">
+  <main id="main">
+    <section class="case-hero container">
+      <a class="back" href="high-quality-rendering.html#assignment-1">返回高质量实时渲染</a>
+      <p class="label" data-reveal>Assignment 01 — Shadow Mapping</p>
+      <h1 class="case-title case-title--sm" data-reveal="lines">
+        <span class="line"><span>实时阴影与</span></span>
+        <span class="line"><span>球谐环境光</span></span>
+      </h1>
+      <div class="case-intro">
+        <p class="case-lead" data-reveal>
           在基础 WebGL Phong 管线中加入方向光阴影、软阴影过滤和 SH 环境光，把“模型被照亮”推进到
           “物体和地面有稳定接触关系、阴影边缘有尺度感”的实时画面。
         </p>
+        <dl class="meta" data-stagger="0.06">
+          <div data-reveal><dt class="label">Course</dt><dd>GAMES202 / Homework 1</dd></div>
+          <div data-reveal><dt class="label">Runtime</dt><dd>WebGL / GLSL</dd></div>
+          <div data-reveal><dt class="label">Core</dt><dd>Shadow Map / PCSS / SH</dd></div>
+          <div data-reveal><dt class="label">Role</dt><dd>渲染管线扩展与调参</dd></div>
+        </dl>
       </div>
-      <div class="case-meta reveal">
-        <div><span>Path</span><strong>D:\Games202Homework\homework0</strong></div>
-        <div><span>Runtime</span><strong>WebGL / GLSL</strong></div>
-        <div><span>Core</span><strong>Shadow Map / PCSS / SH</strong></div>
-        <div><span>Role</span><strong>渲染管线扩展与调参</strong></div>
-      </div>
-    </header>
+    </section>
 
-    <section class="tech-detail-layout">
-      <aside class="tech-toc reveal" aria-label="页面目录">
-        <a href="#idea">核心思路</a>
-        <a href="#pipeline">实现管线</a>
-        <a href="#code">代码示例</a>
-        <a href="#notes">技术要点</a>
-      </aside>
+    <div class="container">
+      <figure data-reveal>
+        <div class="video">
+          <iframe
+            src="https://player.bilibili.com/player.html?isOutside=true&amp;bvid=BV1RFLD6uEku&amp;page=2&amp;high_quality=1&amp;autoplay=0"
+            title="Games202 合集 - 作业 1"
+            loading="lazy"
+            allowfullscreen
+          ></iframe>
+        </div>
+        <figcaption class="video-meta">
+          <strong>Bilibili — Games202 合集 / 作业 1</strong>
+          <a class="arrow-link" href="https://www.bilibili.com/video/BV1RFLD6uEku/?p=2&amp;share_source=copy_web&amp;vd_source=192a4a2488c9b2971d90c4b39f9e472b" target="_blank" rel="noopener noreferrer">在 Bilibili 打开</a>
+        </figcaption>
+      </figure>
+    </div>
 
-      <div class="tech-detail-content">
-        <section id="idea" class="article-card reveal">
-          <p class="small-label">Problem</p>
-          <h2>核心思路</h2>
-          <p>
-            Shadow Map 的关键是把场景先从光源视角渲染出深度图，再在主相机视角中把片元投影回光源空间比较深度。
-            为了避免硬边缘和阴影痤疮，我加入了斜率相关 bias、Poisson 采样、blocker search 和可变半径 PCF。
-            环境光部分使用三阶 SH 系数近似低频漫反射，让阴影区域仍保留环境色，而不是掉成纯黑。
-          </p>
-        </section>
-
-        <section id="pipeline" class="article-grid">
-          <article class="article-card reveal">
-            <p class="small-label">Pass 01</p>
-            <h3>光源深度 Pass</h3>
+    <div class="case-body container">
+      <section class="block" id="idea">
+        <div class="block-head">
+          <div>
+            <span class="label">01 — Problem</span>
+            <h2 data-reveal>核心思路</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
             <p>
-              使用方向光的正交相机生成 light view-projection matrix。WebGL1 环境下没有直接依赖深度纹理，
-              因此用颜色附件写入深度，同时保留 renderbuffer 做正确遮挡。
+              Shadow Map 的关键是把场景先从光源视角渲染出深度图，再在主相机视角中把片元投影回光源空间比较深度。
+              为了避免硬边缘和阴影痤疮，我加入了斜率相关 bias、Poisson 采样、blocker search 和可变半径 PCF。
             </p>
-          </article>
-          <article class="article-card reveal">
-            <p class="small-label">Pass 02</p>
-            <h3>主相机着色 Pass</h3>
             <p>
-              主 pass 将世界坐标投影到 shadow map UV，比较当前深度与 map 深度。阴影因子再乘到直接光上，
-              环境光由 SH irradiance 提供低频补光。
+              环境光部分使用三阶 SH 系数近似低频漫反射，让阴影区域仍保留环境色，而不是掉成纯黑。
             </p>
-          </article>
-        </section>
+          </div>
+        </div>
+      </section>
 
-        <section id="code" class="article-card reveal">
-          <p class="small-label">Important Code</p>
-          <h2>PCSS 式软阴影核心</h2>
-          <p>
-            这段逻辑先搜索 blocker，估算平均遮挡深度，再根据接收点和遮挡点的距离估算半影宽度，
-            最后用可变半径 PCF 过滤阴影。
-          </p>
-<pre class="code-block"><code>float pcfShadowFactor() {
+      <section class="block" id="pipeline">
+        <div class="block-head">
+          <div>
+            <span class="label">02 — Pipeline</span>
+            <h2 data-reveal>两个 Pass 的实现管线</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="sub-grid" data-stagger="0.1">
+            <article class="sub" data-reveal>
+              <span class="label">Pass 01</span>
+              <h3>光源深度 Pass</h3>
+              <div class="prose">
+                <p>使用方向光的正交相机生成 light view-projection matrix。WebGL1 环境下没有直接依赖深度纹理，因此用颜色附件写入深度，同时保留 renderbuffer 做正确遮挡。</p>
+              </div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Pass 02</span>
+              <h3>主相机着色 Pass</h3>
+              <div class="prose">
+                <p>主 pass 将世界坐标投影到 shadow map UV，比较当前深度与 map 深度。阴影因子再乘到直接光上，环境光由 SH irradiance 提供低频补光。</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="block" id="code">
+        <div class="block-head">
+          <div>
+            <span class="label">03 — Important Code</span>
+            <h2 data-reveal>PCSS 式软阴影核心</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <p>先搜索 blocker，估算平均遮挡深度，再根据接收点和遮挡点的距离估算半影宽度，最后用可变半径 PCF 过滤阴影。</p>
+          </div>
+          <div class="code" data-reveal>
+            <div class="code-head label"><span>phongFragment.glsl</span><span>GLSL</span></div>
+<pre><code>float pcfShadowFactor() {
   vec3 proj = vShadowCoord.xyz / vShadowCoord.w;
   vec2 uv = proj.xy * 0.5 + 0.5;
   float cur = proj.z * 0.5 + 0.5;
@@ -106,43 +156,41 @@
       (1.0 + penumbra * uPenumbraScale * lightRadius * 4.0);
   return poissonPcfAverage(uv, cur, bias, filterScale);
 }</code></pre>
-        </section>
+          </div>
+        </div>
+      </section>
 
-        <section id="notes" class="article-grid">
-          <article class="article-card reveal">
-            <p class="small-label">Stability</p>
-            <h3>抗伪影策略</h3>
-            <ul class="bullet-list">
+      <section class="block" id="notes">
+        <div class="block-head">
+          <div>
+            <span class="label">04 — Stability</span>
+            <h2 data-reveal>抗伪影策略</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <ul>
               <li>使用 slope-scaled bias 缓解 grazing angle 下的自阴影条纹。</li>
               <li>对大半影 filter radius 做上限，避免低精度 shadow map 被过度放大。</li>
               <li>加入极小 per-fragment jitter，降低规则采样带来的条带感。</li>
             </ul>
-          </article>
-          <article class="article-card reveal">
-            <p class="small-label">Video</p>
-            <h3>演示视频</h3>
-            <div class="video-embed detail-video">
-              <iframe
-                src="https://player.bilibili.com/player.html?isOutside=true&amp;bvid=BV1RFLD6uEku&amp;page=2&amp;high_quality=1&amp;autoplay=0"
-                title="Games202 合集 - 作业 1"
-                loading="lazy"
-                allowfullscreen
-              ></iframe>
-              <div class="video-caption">
-                <span>Bilibili Video</span>
-                <strong>Games202 合集 / 作业 1</strong>
-                <a
-                  class="project-link"
-                  href="https://www.bilibili.com/video/BV1RFLD6uEku/?p=2&amp;share_source=copy_web&amp;vd_source=192a4a2488c9b2971d90c4b39f9e472b"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >在 Bilibili 打开</a>
-              </div>
-            </div>
-          </article>
-        </section>
-      </div>
-    </section>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="container">
+      <a class="next" href="games202-assignment-2-prt.html">
+        <span class="label">Next — Assignment 02</span>
+        <span class="next-title"><span>PRT 预计算辐射传输</span><span aria-hidden="true">→</span></span>
+      </a>
+    </div>
   </main>
+
+  <footer class="site-footer container label">
+    <span>© <span data-year>2026</span> Chen Nuo</span>
+    <span>Technical Art · Real-Time Rendering</span>
+    <a class="roll" href="#top"><span data-text="回到顶部 ↑">回到顶部 ↑</span></a>
+  </footer>
 </body>
 </html>

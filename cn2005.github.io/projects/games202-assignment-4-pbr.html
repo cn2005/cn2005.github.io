@@ -4,84 +4,139 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="GAMES202 作业 4 技术拆解：GGX PBR、metallic-roughness、IBL、Kulla-Conty 多重散射与 LUT。" />
-  <title>作业 4：PBR 与 Kulla-Conty | 陈诺作品集</title>
+  <meta name="theme-color" content="#0a0a0b" />
+  <title>作业 4：PBR 与 Kulla-Conty · 陈诺</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ccircle cx='32' cy='32' r='12' fill='%23f0643a'/%3E%3C/svg%3E" />
+  <script>document.documentElement.classList.add("js");</script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" media="print" onload="this.media='all'" />
   <link rel="stylesheet" href="../styles.css" />
   <script src="../script.js" defer></script>
 </head>
-<body>
-  <canvas class="field-canvas" data-field-canvas aria-hidden="true"></canvas>
-  <div class="scanline" aria-hidden="true"></div>
+<body id="top">
+  <div class="curtain" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="progress" aria-hidden="true"></div>
+  <a class="skip" href="#main">跳到主要内容</a>
 
-  <main class="case-page tech-detail-page">
-    <a class="back-link" href="high-quality-rendering.html#assignment-4">返回高质量实时渲染</a>
+  <header class="site-header" data-header>
+    <a class="brand" href="../index.html" aria-label="陈诺 · 回到首页">
+      <span class="brand-name">陈诺</span>
+      <span class="brand-role">Chen Nuo — Technical Artist</span>
+    </a>
+    <nav class="nav" aria-label="主导航">
+      <a class="roll" href="../index.html#work"><span data-text="作品">作品</span></a>
+      <a class="roll" href="../index.html#about"><span data-text="关于">关于</span></a>
+      <a class="roll" href="../index.html#method"><span data-text="方法">方法</span></a>
+      <a class="roll" href="../index.html#contact"><span data-text="联系">联系</span></a>
+    </nav>
+  </header>
 
-    <header class="case-hero">
-      <div class="case-title reveal">
-        <p class="eyebrow">Assignment 4 / Physically Based Rendering</p>
-        <h1>PBR 与 Kulla-Conty 多重散射</h1>
-        <p class="case-lead">
+  <main id="main">
+    <section class="case-hero container">
+      <a class="back" href="high-quality-rendering.html#assignment-4">返回高质量实时渲染</a>
+      <p class="label" data-reveal>Assignment 04 — Physically Based Rendering</p>
+      <h1 class="case-title case-title--sm" data-reveal="lines">
+        <span class="line"><span>PBR 与 Kulla-Conty</span></span>
+        <span class="line"><span>多重散射</span></span>
+      </h1>
+      <div class="case-intro">
+        <p class="case-lead" data-reveal>
           实现以 GGX 为核心的 metallic-roughness 材质，并通过 Kulla-Conty 多重散射补偿解决高粗糙金属能量损失，
           让不同 roughness 下的材质过渡更稳定、更符合物理直觉。
         </p>
+        <dl class="meta" data-stagger="0.06">
+          <div data-reveal><dt class="label">Course</dt><dd>GAMES202 / Homework 4</dd></div>
+          <div data-reveal><dt class="label">BRDF</dt><dd>GGX / Smith / Schlick</dd></div>
+          <div data-reveal><dt class="label">Diffuse</dt><dd>Disney Diffuse</dd></div>
+          <div data-reveal><dt class="label">Compensation</dt><dd>Kulla-Conty / Eavg LUT</dd></div>
+        </dl>
       </div>
-      <div class="case-meta reveal">
-        <div><span>Path</span><strong>D:\Games202Homework\homework4</strong></div>
-        <div><span>BRDF</span><strong>GGX / Smith / Schlick</strong></div>
-        <div><span>Diffuse</span><strong>Disney Diffuse</strong></div>
-        <div><span>Compensation</span><strong>Kulla-Conty / Eavg LUT</strong></div>
-      </div>
-    </header>
+    </section>
 
-    <section class="tech-detail-layout">
-      <aside class="tech-toc reveal" aria-label="页面目录">
-        <a href="#idea">核心思路</a>
-        <a href="#pipeline">实现管线</a>
-        <a href="#code">代码示例</a>
-        <a href="#notes">技术要点</a>
-      </aside>
+    <div class="container">
+      <figure data-reveal>
+        <div class="video">
+          <iframe
+            src="https://player.bilibili.com/player.html?isOutside=true&amp;bvid=BV1RFLD6uEku&amp;page=3&amp;high_quality=1&amp;autoplay=0"
+            title="Games202 合集 - 作业 4"
+            loading="lazy"
+            allowfullscreen
+          ></iframe>
+        </div>
+        <figcaption class="video-meta">
+          <strong>Bilibili — Games202 合集 / 作业 4</strong>
+          <a class="arrow-link" href="https://www.bilibili.com/video/BV1RFLD6uEku/?p=3&amp;share_source=copy_web&amp;vd_source=192a4a2488c9b2971d90c4b39f9e472b" target="_blank" rel="noopener noreferrer">在 Bilibili 打开</a>
+        </figcaption>
+      </figure>
+    </div>
 
-      <div class="tech-detail-content">
-        <section id="idea" class="article-card reveal">
-          <p class="small-label">Concept</p>
-          <h2>从单次散射到能量补偿</h2>
-          <p>
-            标准微表面 BRDF 在高粗糙度、多次反射场景下会丢失部分能量，金属球会显得偏暗。
-            Kulla-Conty 的思路是预积分方向性反射能量，用 LUT 估计没有被单次散射带走的部分，
-            再以平均 Fresnel 构造一个额外多重散射项。
-          </p>
-        </section>
+    <div class="case-body container">
+      <section class="block" id="idea">
+        <div class="block-head">
+          <div>
+            <span class="label">01 — Concept</span>
+            <h2 data-reveal>从单次散射到能量补偿</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <p>
+              标准微表面 BRDF 在高粗糙度、多次反射场景下会丢失部分能量，金属球会显得偏暗。
+              Kulla-Conty 的思路是预积分方向性反射能量，用 LUT 估计没有被单次散射带走的部分，
+              再以平均 Fresnel 构造一个额外多重散射项。
+            </p>
+          </div>
+        </div>
+      </section>
 
-        <section id="pipeline" class="article-grid">
-          <article class="article-card reveal">
-            <p class="small-label">PBR Base</p>
-            <h3>基础材质模型</h3>
-            <ul class="bullet-list">
-              <li>读取 baseColor、metallic、roughness，并在线性空间计算。</li>
-              <li>specular 使用 GGX NDF、Smith Geometry 和 Schlick Fresnel。</li>
-              <li>diffuse 使用 Disney diffuse，处理 grazing angle 的漫反射变化。</li>
-            </ul>
-          </article>
-          <article class="article-card reveal">
-            <p class="small-label">IBL</p>
-            <h3>环境光与 LUT</h3>
-            <ul class="bullet-list">
-              <li>低频 diffuse 使用 SH irradiance。</li>
-              <li>specular 使用反射方向采样环境近似。</li>
-              <li>BRDF LUT 和 Eavg LUT 为 Kulla-Conty 提供积分结果。</li>
-            </ul>
-          </article>
-        </section>
+      <section class="block" id="pipeline">
+        <div class="block-head">
+          <div>
+            <span class="label">02 — Pipeline</span>
+            <h2 data-reveal>材质模型与环境光</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="sub-grid" data-stagger="0.1">
+            <article class="sub" data-reveal>
+              <span class="label">PBR Base</span>
+              <h3>基础材质模型</h3>
+              <div class="prose">
+                <ul>
+                  <li>读取 baseColor、metallic、roughness，并在线性空间计算。</li>
+                  <li>specular 使用 GGX NDF、Smith Geometry 和 Schlick Fresnel。</li>
+                  <li>diffuse 使用 Disney diffuse，处理 grazing angle 的漫反射变化。</li>
+                </ul>
+              </div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">IBL</span>
+              <h3>环境光与 LUT</h3>
+              <div class="prose">
+                <ul>
+                  <li>低频 diffuse 使用 SH irradiance。</li>
+                  <li>specular 使用反射方向采样环境近似。</li>
+                  <li>BRDF LUT 和 Eavg LUT 为 Kulla-Conty 提供积分结果。</li>
+                </ul>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
 
-        <section id="code" class="article-card reveal">
-          <p class="small-label">Important Code</p>
-          <h2>Kulla-Conty 多重散射项</h2>
-<pre class="code-block"><code>vec3 MultiScatterBRDF(float NdotL, float NdotV) {
+      <section class="block" id="code">
+        <div class="block-head">
+          <div>
+            <span class="label">03 — Important Code</span>
+            <h2 data-reveal>Kulla-Conty 多重散射项</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="code" data-reveal>
+            <div class="code-head label"><span>KullaContyFragment.glsl</span><span>GLSL</span></div>
+<pre><code>vec3 MultiScatterBRDF(float NdotL, float NdotV) {
   vec3 albedo = pow(texture2D(uAlbedoMap, vTextureCoord).rgb, vec3(2.2));
 
   vec3 E_o = texture2D(uBRDFLut, vec2(NdotL, uRoughness)).xyz;
@@ -97,42 +152,40 @@
               max(1.0 - F_avg * (1.0 - E_avg), vec3(0.001));
   return fadd * fms;
 }</code></pre>
-        </section>
+          </div>
+        </div>
+      </section>
 
-        <section id="notes" class="article-grid">
-          <article class="article-card reveal">
-            <p class="small-label">Result</p>
-            <h3>画面收益</h3>
+      <section class="block" id="notes">
+        <div class="block-head">
+          <div>
+            <span class="label">04 — Result</span>
+            <h2 data-reveal>画面收益</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
             <p>
               对金属材质而言，多重散射补偿可以让粗糙度升高时不至于快速变灰变暗，
               材质球序列中的亮度变化会更连续，尤其适合展示材质参数扫描。
             </p>
-          </article>
-          <article class="article-card reveal">
-            <p class="small-label">Video</p>
-            <h3>演示视频</h3>
-            <div class="video-embed detail-video">
-              <iframe
-                src="https://player.bilibili.com/player.html?isOutside=true&amp;bvid=BV1RFLD6uEku&amp;page=3&amp;high_quality=1&amp;autoplay=0"
-                title="Games202 合集 - 作业 4"
-                loading="lazy"
-                allowfullscreen
-              ></iframe>
-              <div class="video-caption">
-                <span>Bilibili Video</span>
-                <strong>Games202 合集 / 作业 4</strong>
-                <a
-                  class="project-link"
-                  href="https://www.bilibili.com/video/BV1RFLD6uEku/?p=3&amp;share_source=copy_web&amp;vd_source=192a4a2488c9b2971d90c4b39f9e472b"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >在 Bilibili 打开</a>
-              </div>
-            </div>
-          </article>
-        </section>
-      </div>
-    </section>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="container">
+      <a class="next" href="games202-assignment-5-denoise.html">
+        <span class="label">Next — Assignment 05</span>
+        <span class="next-title"><span>时域累积降噪</span><span aria-hidden="true">→</span></span>
+      </a>
+    </div>
   </main>
+
+  <footer class="site-footer container label">
+    <span>© <span data-year>2026</span> Chen Nuo</span>
+    <span>Technical Art · Real-Time Rendering</span>
+    <a class="roll" href="#top"><span data-text="回到顶部 ↑">回到顶部 ↑</span></a>
+  </footer>
 </body>
 </html>

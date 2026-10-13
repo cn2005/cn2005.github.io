@@ -3,250 +3,196 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta
-    name="description"
-    content="高质量实时渲染专题：GAMES202 作业 1 到 5，覆盖实时阴影、PRT、屏幕空间实时光追、PBR 多重散射与降噪。"
-  />
-  <title>高质量实时渲染 | 陈诺作品集</title>
+  <meta name="description" content="高质量实时渲染专题：GAMES202 作业 1 到 5，覆盖实时阴影、PRT、屏幕空间实时光追、PBR 多重散射与降噪。" />
+  <meta name="theme-color" content="#0a0a0b" />
+  <title>高质量实时渲染 · 陈诺</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ccircle cx='32' cy='32' r='12' fill='%23f0643a'/%3E%3C/svg%3E" />
+  <script>document.documentElement.classList.add("js");</script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" media="print" onload="this.media='all'" />
   <link rel="stylesheet" href="../styles.css" />
   <script src="../script.js" defer></script>
 </head>
-<body>
-  <canvas class="field-canvas" data-field-canvas aria-hidden="true"></canvas>
-  <div class="scanline" aria-hidden="true"></div>
+<body id="top">
+  <div class="curtain" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="progress" aria-hidden="true"></div>
+  <a class="skip" href="#main">跳到主要内容</a>
 
-  <main class="case-page render-suite-page">
-    <a class="back-link" href="../index.html#projects">返回作品</a>
+  <header class="site-header" data-header>
+    <a class="brand" href="../index.html" aria-label="陈诺 · 回到首页">
+      <span class="brand-name">陈诺</span>
+      <span class="brand-role">Chen Nuo — Technical Artist</span>
+    </a>
+    <nav class="nav" aria-label="主导航">
+      <a class="roll" href="../index.html#work"><span data-text="作品">作品</span></a>
+      <a class="roll" href="../index.html#about"><span data-text="关于">关于</span></a>
+      <a class="roll" href="../index.html#method"><span data-text="方法">方法</span></a>
+      <a class="roll" href="../index.html#contact"><span data-text="联系">联系</span></a>
+    </nav>
+  </header>
 
-    <header class="case-hero">
-      <div class="case-title reveal">
-        <p class="eyebrow">Rendering Suite / GAMES202</p>
-        <h1>高质量实时渲染</h1>
-        <p class="case-lead">
-          基于 GAMES202 的五个实时渲染作业整理，从阴影、预计算光照、屏幕空间实时光追、
-          PBR 材质到时空降噪，串起一条面向高质量实时画面的工程路径。
+  <main id="main">
+    <section class="case-hero container">
+      <a class="back" href="../index.html#work">返回作品</a>
+      <p class="label" data-reveal>Featured 05 — Rendering Suite / GAMES202</p>
+      <h1 class="case-title" data-reveal="lines"><span class="line"><span>高质量实时渲染</span></span></h1>
+      <div class="case-intro">
+        <p class="case-lead" data-reveal>
+          基于 GAMES202 的五个实时渲染作业整理，从阴影、预计算光照、屏幕空间实时光追、PBR 材质到时空降噪，
+          串起一条面向高质量实时画面的工程路径。
         </p>
+        <dl class="meta" data-stagger="0.06">
+          <div data-reveal><dt class="label">Scope</dt><dd>Assignment 1 – 5</dd></div>
+          <div data-reveal><dt class="label">Stack</dt><dd>WebGL / GLSL / C++ / Nori</dd></div>
+          <div data-reveal><dt class="label">Focus</dt><dd>Lighting / Materials / Denoising</dd></div>
+          <div data-reveal><dt class="label">Output</dt><dd>实时 Demo 与离线序列结果</dd></div>
+        </dl>
       </div>
-
-      <div class="case-meta reveal" aria-label="专题摘要">
-        <div>
-          <span>Scope</span>
-          <strong>Assignment 1 - 5</strong>
-        </div>
-        <div>
-          <span>Stack</span>
-          <strong>WebGL / GLSL / C++ / Nori</strong>
-        </div>
-        <div>
-          <span>Focus</span>
-          <strong>Lighting / Materials / Denoising</strong>
-        </div>
-        <div>
-          <span>Output</span>
-          <strong>实时 Demo 与离线序列结果</strong>
-        </div>
-      </div>
-    </header>
-
-    <section class="render-suite-overview reveal" aria-label="实时渲染专题路线">
-      <div>
-        <p class="eyebrow">Sequence</p>
-        <h2>从单项算法到完整画面链路</h2>
-      </div>
-      <p>
-        这组作业不是孤立算法展示，而是逐步补齐实时渲染画面所需的关键模块：
-        先解决可控阴影和环境光，再把全局光照预计算为可实时查询的数据，随后进入屏幕空间间接光、
-        物理材质和降噪稳定性。每一项都保留统一的视频入口，托管链接补齐后可以直接观看。
-      </p>
     </section>
 
-    <section class="homework-timeline" aria-label="作业列表">
-      <a class="homework-case reveal" id="assignment-1" href="games202-assignment-1-shadow.html" aria-label="查看作业 1 实时阴影与球谐环境光技术实现">
-        <div class="homework-index">
-          <span>01</span>
-          <p>Assignment 1</p>
+    <div class="container">
+      <figure>
+        <div class="cover" style="--ratio: 21 / 9" data-reveal="media">
+          <canvas class="gl" data-gl="materials" aria-label="实时渲染的材质粗糙度序列"></canvas>
         </div>
+        <figcaption class="cover-caption label">
+          <span>Live — GGX Roughness Sweep</span>
+          <span>0.12 → 0.88</span>
+        </figcaption>
+      </figure>
+    </div>
 
-        <div class="homework-body">
-          <div class="homework-copy">
-            <p class="eyebrow">Shadow Mapping / SH Ambient</p>
-            <h2>实时阴影与球谐环境光</h2>
-            <p>
-              在 WebGL 渲染框架里扩展 Phong 管线，引入方向光 Shadow Map、PCF/PCSS 式软阴影、
-              斜率相关 bias、地面接收阴影以及来自环境 cubemap 的低阶 SH 漫反射环境光。
-              目标是让基础实时场景从“有光照”推进到“有可信接触关系与空间层次”。
-            </p>
-
-            <div class="tech-chip-list" aria-label="技术点">
-              <span>Directional Shadow Map</span>
-              <span>PCF / Blocker Search</span>
-              <span>Slope-Scaled Bias</span>
-              <span>SH Irradiance</span>
-              <span>WebGL FBO</span>
-            </div>
-            <span class="homework-link">查看技术拆解</span>
+    <div class="case-body container">
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">Sequence</span>
+            <h2 data-reveal>从单项算法到完整画面链路</h2>
           </div>
-
-          <aside class="video-slot" aria-label="作业 1 视频占位">
-            <div class="video-frame">
-              <span>Bilibili Video</span>
-              <strong>Assignment 1 Demo</strong>
-              <p>已接入演示视频，点击卡片进入观看</p>
-            </div>
-          </aside>
         </div>
-      </a>
-
-      <a class="homework-case reveal" id="assignment-2" href="games202-assignment-2-prt.html" aria-label="查看作业 2 PRT 预计算辐射传输技术实现">
-        <div class="homework-index">
-          <span>02</span>
-          <p>Assignment 2</p>
-        </div>
-
-        <div class="homework-body">
-          <div class="homework-copy">
-            <p class="eyebrow">Precomputed Radiance Transfer</p>
-            <h2>PRT 预计算辐射传输</h2>
+        <div class="block-body">
+          <div class="prose" data-reveal>
             <p>
-              使用 Nori/C++ 预处理环境光与物体传输函数，把 cubemap 投影到二阶球谐系数，
-              并为模型顶点计算 unshadowed、shadowed 与 interreflection 类型的传输系数。
-              运行时在 WebGL 端读取 light/transport 数据，在顶点属性与 shader 中完成实时重光照。
+              这组作业不是孤立的算法展示，而是逐步补齐实时渲染画面所需的关键模块：先解决可控阴影和环境光，
+              再把全局光照预计算为可实时查询的数据，随后进入屏幕空间间接光、物理材质和降噪稳定性。
             </p>
-
-            <div class="tech-chip-list" aria-label="技术点">
-              <span>Spherical Harmonics</span>
-              <span>Cubemap Projection</span>
-              <span>Shadowed PRT</span>
-              <span>Interreflection</span>
-              <span>Runtime Relighting</span>
-            </div>
-            <span class="homework-link">查看技术拆解</span>
+            <p>每一项都附有技术拆解与演示视频。</p>
           </div>
-
-          <aside class="video-slot" aria-label="作业 2 视频占位">
-            <div class="video-frame">
-              <span>Bilibili Video</span>
-              <strong>Assignment 2 Demo</strong>
-              <p>已接入演示视频，点击卡片进入观看</p>
-            </div>
-          </aside>
         </div>
-      </a>
+      </section>
 
-      <a class="homework-case reveal" id="assignment-3" href="games202-assignment-3-ssrt.html" aria-label="查看作业 3 屏幕空间实时光追与间接光技术实现">
-        <div class="homework-index">
-          <span>03</span>
-          <p>Assignment 3</p>
-        </div>
-
-        <div class="homework-body">
-          <div class="homework-copy">
-            <p class="eyebrow">Screen-Space Ray Tracing</p>
-            <h2>屏幕空间实时光追与间接光</h2>
+      <section aria-label="作业列表">
+        <a class="assign" id="assignment-1" href="games202-assignment-1-shadow.html" data-reveal>
+          <span class="assign-no">01</span>
+          <div class="assign-body">
+            <span class="label">Shadow Mapping / SH Ambient</span>
+            <h3>实时阴影与球谐环境光</h3>
             <p>
-              搭建基于 G-Buffer 的屏幕空间管线，输出 diffuse、depth、normal、shadow 和 world position。
-              在 SSR/SSRT shader 中进行半球采样、ray marching、厚度判断与二分细化，
-              将命中的屏幕空间点用于估计单次反弹间接光，并把 direct/indirect lighting 分离写入 MRT。
+              在 WebGL 渲染框架里扩展 Phong 管线，引入方向光 Shadow Map、PCF/PCSS 式软阴影、斜率相关 bias、
+              地面接收阴影以及来自环境 cubemap 的低阶 SH 漫反射环境光。
             </p>
-
-            <div class="tech-chip-list" aria-label="技术点">
-              <span>Deferred G-Buffer</span>
-              <span>Screen-Space Ray Marching</span>
-              <span>Cosine Sampling</span>
-              <span>Binary Refinement</span>
-              <span>MRT Lighting Split</span>
+            <div class="tags">
+              <span>Shadow Map</span><span>PCF / Blocker Search</span><span>Slope-Scaled Bias</span><span>SH Irradiance</span>
             </div>
-            <span class="homework-link">查看技术拆解</span>
           </div>
+          <div class="assign-cta">
+            <span class="label">Video</span>
+            <span class="arrow-link">技术拆解</span>
+          </div>
+        </a>
 
-          <aside class="video-slot" aria-label="作业 3 视频占位">
-            <div class="video-frame">
-              <span>Bilibili Video</span>
-              <strong>Assignment 3 Demo</strong>
-              <p>已接入演示视频，点击卡片进入观看</p>
-            </div>
-          </aside>
-        </div>
-      </a>
-
-      <a class="homework-case reveal" id="assignment-4" href="games202-assignment-4-pbr.html" aria-label="查看作业 4 物理材质与多重散射补偿技术实现">
-        <div class="homework-index">
-          <span>04</span>
-          <p>Assignment 4</p>
-        </div>
-
-        <div class="homework-body">
-          <div class="homework-copy">
-            <p class="eyebrow">PBR / Kulla-Conty</p>
-            <h2>物理材质与多重散射补偿</h2>
+        <a class="assign" id="assignment-2" href="games202-assignment-2-prt.html" data-reveal>
+          <span class="assign-no">02</span>
+          <div class="assign-body">
+            <span class="label">Precomputed Radiance Transfer</span>
+            <h3>PRT 预计算辐射传输</h3>
             <p>
-              实现 GGX 微表面模型、Smith 几何项、Schlick Fresnel、Disney diffuse、
-              metallic/roughness 贴图读取以及 SH/环境贴图照明；进一步加入 Kulla-Conty
-              多重散射近似，通过 BRDF LUT 与 Eavg LUT 补偿高粗糙金属材质的能量损失。
+              使用 Nori/C++ 预处理环境光与物体传输函数，把 cubemap 投影到二阶球谐系数，并计算 unshadowed、
+              shadowed 与 interreflection 传输系数；运行时在 shader 中完成实时重光照。
             </p>
-
-            <div class="tech-chip-list" aria-label="技术点">
-              <span>GGX Microfacet</span>
-              <span>Disney Diffuse</span>
-              <span>Metallic-Roughness</span>
-              <span>Kulla-Conty</span>
-              <span>BRDF / Eavg LUT</span>
+            <div class="tags">
+              <span>Spherical Harmonics</span><span>Shadowed PRT</span><span>Interreflection</span><span>Relighting</span>
             </div>
-            <span class="homework-link">查看技术拆解</span>
           </div>
+          <div class="assign-cta">
+            <span class="label">Video</span>
+            <span class="arrow-link">技术拆解</span>
+          </div>
+        </a>
 
-          <aside class="video-slot" aria-label="作业 4 视频占位">
-            <div class="video-frame">
-              <span>Bilibili Video</span>
-              <strong>Assignment 4 Demo</strong>
-              <p>已接入演示视频，点击卡片进入观看</p>
-            </div>
-          </aside>
-        </div>
-      </a>
-
-      <a class="homework-case reveal" id="assignment-5" href="games202-assignment-5-denoise.html" aria-label="查看作业 5 单帧滤波与时域累积降噪技术实现">
-        <div class="homework-index">
-          <span>05</span>
-          <p>Assignment 5</p>
-        </div>
-
-        <div class="homework-body">
-          <div class="homework-copy">
-            <p class="eyebrow">Denoising / Temporal Stability</p>
-            <h2>单帧滤波与时域累积降噪</h2>
+        <a class="assign" id="assignment-3" href="games202-assignment-3-ssrt.html" data-reveal>
+          <span class="assign-no">03</span>
+          <div class="assign-body">
+            <span class="label">Screen-Space Ray Tracing</span>
+            <h3>屏幕空间实时光追与间接光</h3>
             <p>
-              以 EXR 序列为输入，读取 beauty、depth、normal、position、ID 与相机矩阵，
-              组织离线降噪器的数据结构。核心思路是用几何/材质信息引导联合双边滤波，
-              再通过重投影、temporal clamp 与指数滑动平均积累历史结果，让低采样画面在运动中保持稳定。
+              基于 G-Buffer 的屏幕空间管线，在 shader 中进行半球采样、ray marching、厚度判断与二分细化，
+              估计单次反弹间接光，并把 direct / indirect lighting 分离写入 MRT。
             </p>
-
-            <div class="tech-chip-list" aria-label="技术点">
-              <span>Joint Bilateral Filter</span>
-              <span>Depth / Normal Guide</span>
-              <span>Reprojection</span>
-              <span>Temporal Clamp</span>
-              <span>EXR Sequence</span>
+            <div class="tags">
+              <span>Deferred G-Buffer</span><span>Ray Marching</span><span>Binary Refinement</span><span>MRT</span>
             </div>
-            <span class="homework-link">查看技术拆解</span>
           </div>
+          <div class="assign-cta">
+            <span class="label">Video</span>
+            <span class="arrow-link">技术拆解</span>
+          </div>
+        </a>
 
-          <aside class="video-slot" aria-label="作业 5 视频占位">
-            <div class="video-frame">
-              <span>Bilibili Video</span>
-              <strong>Assignment 5 Demo</strong>
-              <p>已接入演示视频，点击卡片进入观看</p>
+        <a class="assign" id="assignment-4" href="games202-assignment-4-pbr.html" data-reveal>
+          <span class="assign-no">04</span>
+          <div class="assign-body">
+            <span class="label">PBR / Kulla-Conty</span>
+            <h3>物理材质与多重散射补偿</h3>
+            <p>
+              实现 GGX 微表面、Smith 几何项、Schlick Fresnel、Disney diffuse 与 metallic/roughness 材质；
+              通过 Kulla-Conty、BRDF LUT 与 Eavg LUT 补偿高粗糙金属的能量损失。
+            </p>
+            <div class="tags">
+              <span>GGX Microfacet</span><span>Disney Diffuse</span><span>Kulla-Conty</span><span>BRDF / Eavg LUT</span>
             </div>
-          </aside>
-        </div>
+          </div>
+          <div class="assign-cta">
+            <span class="label">Video</span>
+            <span class="arrow-link">技术拆解</span>
+          </div>
+        </a>
+
+        <a class="assign" id="assignment-5" href="games202-assignment-5-denoise.html" data-reveal>
+          <span class="assign-no">05</span>
+          <div class="assign-body">
+            <span class="label">Denoising / Temporal Stability</span>
+            <h3>单帧滤波与时域累积降噪</h3>
+            <p>
+              以 EXR 序列为输入，用几何与材质信息引导联合双边滤波，再通过重投影、temporal clamp
+              与指数滑动平均积累历史结果，让低采样画面在运动中保持稳定。
+            </p>
+            <div class="tags">
+              <span>Joint Bilateral</span><span>Reprojection</span><span>Temporal Clamp</span><span>EXR Sequence</span>
+            </div>
+          </div>
+          <div class="assign-cta">
+            <span class="label">Video</span>
+            <span class="arrow-link">技术拆解</span>
+          </div>
+        </a>
+      </section>
+    </div>
+
+    <div class="container">
+      <a class="next" href="sound-reaper.html">
+        <span class="label">Next Project — 06</span>
+        <span class="next-title"><span>Sound Reaper</span><span aria-hidden="true">→</span></span>
       </a>
-    </section>
+    </div>
   </main>
+
+  <footer class="site-footer container label">
+    <span>© <span data-year>2026</span> Chen Nuo</span>
+    <span>Technical Art · Real-Time Rendering</span>
+    <a class="roll" href="#top"><span data-text="回到顶部 ↑">回到顶部 ↑</span></a>
+  </footer>
 </body>
 </html>

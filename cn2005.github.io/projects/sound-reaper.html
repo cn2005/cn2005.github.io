@@ -4,108 +4,149 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Sound Reaper 项目详情：节奏动作游戏 Demo、战斗系统、Roguelike 强化与 Unreal Engine 实现。" />
-  <title>Sound Reaper | 陈诺作品集</title>
+  <meta name="theme-color" content="#0a0a0b" />
+  <title>Sound Reaper · 陈诺</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ccircle cx='32' cy='32' r='12' fill='%23f0643a'/%3E%3C/svg%3E" />
+  <script>document.documentElement.classList.add("js");</script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
-    rel="stylesheet"
-  />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" media="print" onload="this.media='all'" />
   <link rel="stylesheet" href="../styles.css" />
   <script src="../script.js" defer></script>
 </head>
-<body>
-  <canvas class="field-canvas" data-field-canvas aria-hidden="true"></canvas>
-  <div class="scanline" aria-hidden="true"></div>
-  <main class="case-page">
-    <a class="back-link" href="../index.html#projects">返回作品</a>
+<body id="top">
+  <div class="curtain" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="progress" aria-hidden="true"></div>
+  <a class="skip" href="#main">跳到主要内容</a>
 
-    <header class="case-hero">
-      <div class="case-title">
-        <p class="eyebrow">Featured Project / Rhythm Action</p>
-        <h1>Sound Reaper</h1>
-        <p class="case-lead">
+  <header class="site-header" data-header>
+    <a class="brand" href="../index.html" aria-label="陈诺 · 回到首页">
+      <span class="brand-name">陈诺</span>
+      <span class="brand-role">Chen Nuo — Technical Artist</span>
+    </a>
+    <nav class="nav" aria-label="主导航">
+      <a class="roll" href="../index.html#work"><span data-text="作品">作品</span></a>
+      <a class="roll" href="../index.html#about"><span data-text="关于">关于</span></a>
+      <a class="roll" href="../index.html#method"><span data-text="方法">方法</span></a>
+      <a class="roll" href="../index.html#contact"><span data-text="联系">联系</span></a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="case-hero container">
+      <a class="back" href="../index.html#work">返回作品</a>
+      <p class="label" data-reveal>Featured 06 — Rhythm Action</p>
+      <h1 class="case-title" data-reveal="lines"><span class="line"><span>Sound Reaper</span></span></h1>
+      <div class="case-intro">
+        <p class="case-lead" data-reveal>
           采用 3D 俯视角的实时战斗系统，将音乐节奏同步机制、动作战斗与 Roguelike 强化结合起来。
         </p>
+        <dl class="meta" data-stagger="0.06">
+          <div data-reveal><dt class="label">Time</dt><dd>2025.10 – 2025.11</dd></div>
+          <div data-reveal><dt class="label">Genre</dt><dd>Rhythm Action / Roguelike</dd></div>
+          <div data-reveal><dt class="label">Engine</dt><dd>Unreal Engine</dd></div>
+          <div data-reveal><dt class="label">Focus</dt><dd>节奏判定、战斗反馈、强化系统</dd></div>
+        </dl>
       </div>
-      <div class="case-meta" aria-label="项目摘要">
-        <div>
-          <span>Time</span>
-          <strong>2025.10 - 2025.11</strong>
-        </div>
-        <div>
-          <span>Genre</span>
-          <strong>Rhythm Action / Roguelike</strong>
-        </div>
-        <div>
-          <span>Engine</span>
-          <strong>Unreal Engine</strong>
-        </div>
-        <div>
-          <span>Focus</span>
-          <strong>节奏判定、战斗反馈、强化系统</strong>
-        </div>
-      </div>
-    </header>
-
-    <section class="article-stack">
-      <div class="render-gallery">
-        <figure class="render-shot">
-          <img class="render-image" src="../assets/sound-reaper-architecture.png" alt="Sound Reaper 系统架构图" />
-          <figcaption>节奏判定、战斗事件与强化系统的模块关系</figcaption>
-        </figure>
-        <div class="video-note">
-          <p class="small-label">Demo Media</p>
-          <h3>视频资产待补充</h3>
-          <p class="media-tip">
-            当前仓库里没有可播放的 demo 视频文件，因此页面先以系统架构图和技术拆解作为展示主体。
-            后续只需要把视频放入 <code>assets/</code> 并替换这里的说明即可。
-          </p>
-        </div>
-      </div>
-
-      <article class="article-card">
-        <p class="small-label">Concept</p>
-        <h2>节奏即力量</h2>
-        <p>
-          本作属于 Rhythm-Action 类型。玩家在音乐节拍中通过精准攻击与闪避建立节奏连击，
-          节奏表现会直接影响攻击伤害、技能冷却和连击倍率，让听觉反馈与操作策略形成强绑定。
-        </p>
-        <p>
-          详细文档：
-          <a class="doc-link" href="https://www.kdocs.cn/l/cgjx6C7TC927" target="_blank" rel="noopener noreferrer">
-            WPS 云文档
-          </a>
-        </p>
-      </article>
-
-      <article class="article-card core-tech-article">
-        <p class="small-label">System</p>
-        <h3>核心技术</h3>
-        <ul>
-          <li>
-            <strong>Rhythm-Driven Combat：</strong>
-            通过 BPM 计算每拍时间，在玩家输入时进行时间余数判定，实现 Perfect、Good、Miss 三档节奏反馈。
-          </li>
-          <li>
-            <strong>RhythmMultiplier 事件系统：</strong>
-            同时承担输入监听与事件广播，让角色、技能与攻击逻辑能根据判定结果动态响应。
-          </li>
-          <li>
-            <strong>Modifier 强化架构：</strong>
-            作为战斗逻辑中间层，把输入、子弹生成和伤害结算解耦，使新强化可以在不改核心战斗代码的情况下叠加生效。
-          </li>
-          <li>
-            <strong>Roguelike 强化生成：</strong>
-            关卡结束后按稀有度概率抽取强化，并映射到 UI 选项，支持数值型与行为型强化。
-          </li>
-          <li>
-            <strong>Unreal Engine 实现：</strong>
-            整合 Behavior Tree、对象池、Niagara 特效、射线检测和碰撞体检测完成战斗反馈与性能优化。
-          </li>
-        </ul>
-      </article>
     </section>
+
+    <div class="container">
+      <figure>
+        <div class="cover media-diagram" style="--ratio: 16 / 9" data-reveal="media">
+          <img src="../assets/sound-reaper-architecture.png" alt="Sound Reaper 系统架构图：输入、节奏判定、Modifier、子弹生成与伤害结算" />
+        </div>
+        <figcaption class="cover-caption label">
+          <span>System Architecture</span>
+          <span>Input → Rhythm → Modifier → Spawn → Damage</span>
+        </figcaption>
+      </figure>
+    </div>
+
+    <div class="case-body container">
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">01 — Concept</span>
+            <h2 data-reveal>节奏即力量</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <p>
+              本作属于 Rhythm-Action 类型。玩家在音乐节拍中通过精准攻击与闪避建立节奏连击，
+              节奏表现会直接影响攻击伤害、技能冷却和连击倍率，让听觉反馈与操作策略形成强绑定。
+            </p>
+            <p>
+              详细设计文档：<a href="https://www.kdocs.cn/l/cgjx6C7TC927" target="_blank" rel="noopener noreferrer">WPS 云文档 ↗</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">02 — System</span>
+            <h2 data-reveal>核心技术</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="sub-grid" data-stagger="0.08">
+            <article class="sub" data-reveal>
+              <span class="label">Rhythm-Driven Combat</span>
+              <h3>节奏判定</h3>
+              <div class="prose"><p>通过 BPM 计算每拍时间，在玩家输入时进行时间余数判定，实现 Perfect、Good、Miss 三档节奏反馈。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">RhythmMultiplier</span>
+              <h3>事件系统</h3>
+              <div class="prose"><p>同时承担输入监听与事件广播，让角色、技能与攻击逻辑能根据判定结果动态响应。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Modifier</span>
+              <h3>强化架构</h3>
+              <div class="prose"><p>作为战斗逻辑中间层，把输入、子弹生成和伤害结算解耦，使新强化可以在不改核心战斗代码的情况下叠加生效。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Roguelike</span>
+              <h3>强化生成</h3>
+              <div class="prose"><p>关卡结束后按稀有度概率抽取强化，并映射到 UI 选项，支持数值型与行为型强化。</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">03 — Engine</span>
+            <h2 data-reveal>Unreal Engine 实现</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <p>整合 Behavior Tree、对象池、Niagara 特效、射线检测和碰撞体检测，完成战斗反馈与性能优化。</p>
+          </div>
+          <div class="tags" data-reveal>
+            <span>Behavior Tree</span><span>Object Pool</span><span>Niagara</span><span>Line Trace</span><span>Collision</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="container">
+      <a class="next" href="ai-scene-lighting.html">
+        <span class="label">Next Project — 01</span>
+        <span class="next-title"><span>AI 场景打光</span><span aria-hidden="true">→</span></span>
+      </a>
+    </div>
   </main>
+
+  <footer class="site-footer container label">
+    <span>© <span data-year>2026</span> Chen Nuo</span>
+    <span>Technical Art · Real-Time Rendering</span>
+    <a class="roll" href="#top"><span data-text="回到顶部 ↑">回到顶部 ↑</span></a>
+  </footer>
 </body>
 </html>

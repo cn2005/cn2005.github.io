@@ -4,102 +4,151 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="GAMES202 作业 3 技术拆解：G-Buffer、屏幕空间实时光追、间接光估计、A-trous 联合双边和 TAA。" />
-  <title>作业 3：屏幕空间实时光追与间接光 | 陈诺作品集</title>
+  <meta name="theme-color" content="#0a0a0b" />
+  <title>作业 3：屏幕空间实时光追与间接光 · 陈诺</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ccircle cx='32' cy='32' r='12' fill='%23f0643a'/%3E%3C/svg%3E" />
+  <script>document.documentElement.classList.add("js");</script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" media="print" onload="this.media='all'" />
   <link rel="stylesheet" href="../styles.css" />
   <script src="../script.js" defer></script>
 </head>
-<body>
-  <canvas class="field-canvas" data-field-canvas aria-hidden="true"></canvas>
-  <div class="scanline" aria-hidden="true"></div>
+<body id="top">
+  <div class="curtain" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="progress" aria-hidden="true"></div>
+  <a class="skip" href="#main">跳到主要内容</a>
 
-  <main class="case-page tech-detail-page">
-    <a class="back-link" href="high-quality-rendering.html#assignment-3">返回高质量实时渲染</a>
+  <header class="site-header" data-header>
+    <a class="brand" href="../index.html" aria-label="陈诺 · 回到首页">
+      <span class="brand-name">陈诺</span>
+      <span class="brand-role">Chen Nuo — Technical Artist</span>
+    </a>
+    <nav class="nav" aria-label="主导航">
+      <a class="roll" href="../index.html#work"><span data-text="作品">作品</span></a>
+      <a class="roll" href="../index.html#about"><span data-text="关于">关于</span></a>
+      <a class="roll" href="../index.html#method"><span data-text="方法">方法</span></a>
+      <a class="roll" href="../index.html#contact"><span data-text="联系">联系</span></a>
+    </nav>
+  </header>
 
-    <header class="case-hero">
-      <div class="case-title reveal">
-        <p class="eyebrow">Assignment 3 / Screen-Space Ray Tracing</p>
-        <h1>屏幕空间实时光追与间接光</h1>
-        <p class="case-lead">
-          使用 G-Buffer 提供场景几何信息，在屏幕空间中做半球采样和 ray marching，
-          估计一次反弹间接光；随后用联合双边/A-trous 和 TAA 稳定低采样噪声。
+  <main id="main">
+    <section class="case-hero container">
+      <a class="back" href="high-quality-rendering.html#assignment-3">返回高质量实时渲染</a>
+      <p class="label" data-reveal>Assignment 03 — Screen-Space Ray Tracing</p>
+      <h1 class="case-title case-title--sm" data-reveal="lines">
+        <span class="line"><span>屏幕空间实时光追</span></span>
+        <span class="line"><span>与间接光</span></span>
+      </h1>
+      <div class="case-intro">
+        <p class="case-lead" data-reveal>
+          使用 G-Buffer 提供场景几何信息，在屏幕空间中做半球采样和 ray marching，估计一次反弹间接光；
+          随后用联合双边 / A-trous 和 TAA 稳定低采样噪声。
         </p>
+        <dl class="meta" data-stagger="0.06">
+          <div data-reveal><dt class="label">Course</dt><dd>GAMES202 / Homework 3</dd></div>
+          <div data-reveal><dt class="label">Buffers</dt><dd>Diffuse / Depth / Normal / Shadow / Position</dd></div>
+          <div data-reveal><dt class="label">Lighting</dt><dd>Direct + Indirect MRT Split</dd></div>
+          <div data-reveal><dt class="label">Denoise</dt><dd>A-trous Bilateral / TAA</dd></div>
+        </dl>
       </div>
-      <div class="case-meta reveal">
-        <div><span>Path</span><strong>D:\Games202Homework\homework3</strong></div>
-        <div><span>Buffers</span><strong>Diffuse / Depth / Normal / Shadow / Position</strong></div>
-        <div><span>Lighting</span><strong>Direct + Indirect MRT Split</strong></div>
-        <div><span>Denoise</span><strong>A-trous Bilateral / TAA</strong></div>
-      </div>
-    </header>
+    </section>
 
-    <section class="tech-detail-layout">
-      <aside class="tech-toc reveal" aria-label="页面目录">
-        <a href="#idea">核心思路</a>
-        <a href="#pipeline">实现管线</a>
-        <a href="#code">代码示例</a>
-        <a href="#denoise">降噪</a>
-      </aside>
+    <div class="container">
+      <figure data-reveal>
+        <div class="video">
+          <iframe
+            src="https://player.bilibili.com/player.html?isOutside=true&amp;bvid=BV1H1LS6SEqs&amp;page=1&amp;high_quality=1&amp;autoplay=0"
+            title="Games202hw3 SSR + TAA + 联合双边滤波"
+            loading="lazy"
+            allowfullscreen
+          ></iframe>
+        </div>
+        <figcaption class="video-meta">
+          <strong>Bilibili — Games202hw3 SSR + TAA + 联合双边滤波</strong>
+          <a class="arrow-link" href="https://www.bilibili.com/video/BV1H1LS6SEqs/?share_source=copy_web&amp;vd_source=192a4a2488c9b2971d90c4b39f9e472b" target="_blank" rel="noopener noreferrer">在 Bilibili 打开</a>
+        </figcaption>
+      </figure>
+    </div>
 
-      <div class="tech-detail-content">
-        <section id="idea" class="article-card reveal">
-          <p class="small-label">Concept</p>
-          <h2>用屏幕已有信息近似间接光</h2>
-          <p>
-            屏幕空间方法只追踪当前相机能看到的几何。它的好处是实现轻、数据局部、适合实时 demo；
-            代价是看不到屏幕外或被遮挡的几何。因此实现上要处理出屏、厚度、深度误差和低采样噪声。
-          </p>
-        </section>
-
-        <section id="pipeline" class="article-grid">
-          <article class="article-card reveal">
-            <p class="small-label">G-Buffer</p>
-            <h3>几何与材质缓存</h3>
+    <div class="case-body container">
+      <section class="block" id="idea">
+        <div class="block-head">
+          <div>
+            <span class="label">01 — Concept</span>
+            <h2 data-reveal>用屏幕已有信息近似间接光</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
             <p>
-              第一阶段写入 diffuse、depth、normal、shadow visibility 和 world position。
-              后续 ray marching 和联合滤波都依赖这些稳定通道，而不是直接依赖 noisy color。
+              屏幕空间方法只追踪当前相机能看到的几何。它的好处是实现轻、数据局部、适合实时 demo；
+              代价是看不到屏幕外或被遮挡的几何。因此实现上要处理出屏、厚度、深度误差和低采样噪声。
             </p>
-          </article>
-          <article class="article-card reveal">
-            <p class="small-label">SSRT</p>
-            <h3>屏幕空间命中</h3>
-            <p>
-              每个像素按法线半球 cosine stratified sampling，沿采样方向在世界空间步进，
-              投影到屏幕后与 G-Buffer depth 比较；发现穿越后用二分细化命中点。
-            </p>
-          </article>
-        </section>
+          </div>
+        </div>
+      </section>
 
-        <section id="code" class="article-card reveal">
-          <p class="small-label">Important Code</p>
-          <h2>Ray Marching 与二分细化</h2>
-<pre class="code-block"><code>bool RayMarch(vec3 ori, vec3 dir, out vec3 hitPos) {
+      <section class="block" id="pipeline">
+        <div class="block-head">
+          <div>
+            <span class="label">02 — Pipeline</span>
+            <h2 data-reveal>G-Buffer 与屏幕空间命中</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="sub-grid" data-stagger="0.1">
+            <article class="sub" data-reveal>
+              <span class="label">G-Buffer</span>
+              <h3>几何与材质缓存</h3>
+              <div class="prose">
+                <p>第一阶段写入 diffuse、depth、normal、shadow visibility 和 world position。后续 ray marching 和联合滤波都依赖这些稳定通道，而不是直接依赖 noisy color。</p>
+              </div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">SSRT</span>
+              <h3>屏幕空间命中</h3>
+              <div class="prose">
+                <p>每个像素按法线半球 cosine stratified sampling，沿采样方向在世界空间步进，投影到屏幕后与 G-Buffer depth 比较；发现穿越后用二分细化命中点。</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="block" id="code">
+        <div class="block-head">
+          <div>
+            <span class="label">03 — Important Code</span>
+            <h2 data-reveal>Ray Marching 与二分细化</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="code" data-reveal>
+            <div class="code-head label"><span>ssrFragment.glsl</span><span>GLSL</span></div>
+<pre><code>bool RayMarch(vec3 ori, vec3 dir, out vec3 hitPos) {
   vec3 rayDir = normalize(dir);
   vec3 lastPos = ori;
   vec3 curPos = ori + rayDir * RAYMARCH_STEP_SIZE;
 
-  for (int i = 0; i < MAX_RAYMARCH_STEP; i++) {
+  for (int i = 0; i &lt; MAX_RAYMARCH_STEP; i++) {
     vec2 uv = GetScreenCoordinate(curPos);
     float depthDiff = GetDepth(curPos) - GetGBufferDepth(uv);
 
-    if (depthDiff > 0.0 && depthDiff < RAYMARCH_THICKNESS) {
+    if (depthDiff &gt; 0.0 &amp;&amp; depthDiff &lt; RAYMARCH_THICKNESS) {
       hitPos = curPos;
       return true;
     }
 
-    if (depthDiff >= RAYMARCH_THICKNESS) {
+    if (depthDiff &gt;= RAYMARCH_THICKNESS) {
       vec3 begin = lastPos;
       vec3 end = curPos;
-      for (int j = 0; j < RAYMARCH_BINARY_STEP; j++) {
+      for (int j = 0; j &lt; RAYMARCH_BINARY_STEP; j++) {
         vec3 mid = (begin + end) * 0.5;
         float midDiff = GetDepth(mid) -
             GetGBufferDepth(GetScreenCoordinate(mid));
-        if (midDiff > 0.0) end = mid;
+        if (midDiff &gt; 0.0) end = mid;
         else begin = mid;
       }
       hitPos = end;
@@ -111,51 +160,50 @@
   }
   return false;
 }</code></pre>
-        </section>
-
-        <section id="denoise" class="article-grid">
-          <article class="article-card reveal">
-            <p class="small-label">Denoise</p>
-            <h3>A-trous 联合双边</h3>
-            <p>
-              对 indirect lighting 单独做多轮滤波。权重由空间核、深度差、法线差和 diffuse 差共同决定，
-              每轮 step size 扩张，形成 A-trous 风格的大范围降噪，同时尽量保护边界。
-            </p>
-          </article>
-          <article class="article-card reveal">
-            <p class="small-label">Temporal</p>
-            <h3>TAA 历史累积</h3>
-            <p>
-              当前帧合成后写入 history FBO。历史颜色会被当前 3x3 邻域 min/max clamp，
-              再根据 history weight 混合，减少拖影和过度积累。
-            </p>
-          </article>
-        </section>
-
-        <section class="article-card reveal">
-          <p class="small-label">Video</p>
-          <h3>演示视频</h3>
-          <div class="video-embed detail-video">
-            <iframe
-              src="https://player.bilibili.com/player.html?isOutside=true&amp;bvid=BV1H1LS6SEqs&amp;page=1&amp;high_quality=1&amp;autoplay=0"
-              title="Games202hw3SSR+TAA+联合双边滤波"
-              loading="lazy"
-              allowfullscreen
-            ></iframe>
-            <div class="video-caption">
-              <span>Bilibili Video</span>
-              <strong>Games202hw3SSR+TAA+联合双边滤波</strong>
-              <a
-                class="project-link"
-                href="https://www.bilibili.com/video/BV1H1LS6SEqs/?share_source=copy_web&amp;vd_source=192a4a2488c9b2971d90c4b39f9e472b"
-                target="_blank"
-                rel="noopener noreferrer"
-              >在 Bilibili 打开</a>
-            </div>
           </div>
-        </section>
-      </div>
-    </section>
+        </div>
+      </section>
+
+      <section class="block" id="denoise">
+        <div class="block-head">
+          <div>
+            <span class="label">04 — Denoise</span>
+            <h2 data-reveal>空间滤波与时域累积</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="sub-grid" data-stagger="0.1">
+            <article class="sub" data-reveal>
+              <span class="label">Spatial</span>
+              <h3>A-trous 联合双边</h3>
+              <div class="prose">
+                <p>对 indirect lighting 单独做多轮滤波。权重由空间核、深度差、法线差和 diffuse 差共同决定，每轮 step size 扩张，形成 A-trous 风格的大范围降噪，同时尽量保护边界。</p>
+              </div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Temporal</span>
+              <h3>TAA 历史累积</h3>
+              <div class="prose">
+                <p>当前帧合成后写入 history FBO。历史颜色会被当前 3x3 邻域 min/max clamp，再根据 history weight 混合，减少拖影和过度积累。</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="container">
+      <a class="next" href="games202-assignment-4-pbr.html">
+        <span class="label">Next — Assignment 04</span>
+        <span class="next-title"><span>PBR 与 Kulla-Conty</span><span aria-hidden="true">→</span></span>
+      </a>
+    </div>
   </main>
+
+  <footer class="site-footer container label">
+    <span>© <span data-year>2026</span> Chen Nuo</span>
+    <span>Technical Art · Real-Time Rendering</span>
+    <a class="roll" href="#top"><span data-text="回到顶部 ↑">回到顶部 ↑</span></a>
+  </footer>
 </body>
 </html>

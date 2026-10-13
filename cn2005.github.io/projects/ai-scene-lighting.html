@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AI 场景打光：在 Unreal Engine 5 中从画面反推可编辑的真实灯光。负责 LightExtractor 的数据生产与全局光网络训练，并为 Relight 沉淀打光审美范式。" />
+  <meta name="theme-color" content="#0a0a0b" />
+  <title>AI 场景打光 · 陈诺</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ccircle cx='32' cy='32' r='12' fill='%23f0643a'/%3E%3C/svg%3E" />
+  <script>document.documentElement.classList.add("js");</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" media="print" onload="this.media='all'" />
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body id="top">
+  <div class="curtain" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="progress" aria-hidden="true"></div>
+  <a class="skip" href="#main">跳到主要内容</a>
+
+  <header class="site-header" data-header>
+    <a class="brand" href="../index.html" aria-label="陈诺 · 回到首页">
+      <span class="brand-name">陈诺</span>
+      <span class="brand-role">Chen Nuo — Technical Artist</span>
+    </a>
+    <nav class="nav" aria-label="主导航">
+      <a class="roll" href="../index.html#work"><span data-text="作品">作品</span></a>
+      <a class="roll" href="../index.html#about"><span data-text="关于">关于</span></a>
+      <a class="roll" href="../index.html#method"><span data-text="方法">方法</span></a>
+      <a class="roll" href="../index.html#contact"><span data-text="联系">联系</span></a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="case-hero container">
+      <a class="back" href="../index.html#work">返回作品</a>
+      <p class="label" data-reveal>Featured 01 — Neural Lighting / Internship</p>
+      <h1 class="case-title case-title--sm" data-reveal="lines">
+        <span class="line"><span>AI 场景打光</span></span>
+        <span class="line"><span>从画面反推引擎灯光</span></span>
+      </h1>
+      <div class="case-intro">
+        <p class="case-lead" data-reveal>
+          美术只说一句“黄昏，窗边一点暖光”，或丢一张参考图，系统就在 UE5 里摆出一组<strong>可继续编辑的真实灯光</strong>。
+          我负责其中 LightExtractor 的数据生产与全局光网络训练，并为 Relight 沉淀一套打光审美范式。
+        </p>
+        <dl class="meta" data-stagger="0.06">
+          <div data-reveal><dt class="label">Role</dt><dd>算法实习生 · LightExtractor</dd></div>
+          <div data-reveal><dt class="label">Period</dt><dd>2026.07 – 2026.10</dd></div>
+          <div data-reveal><dt class="label">Engine</dt><dd>Unreal Engine 5 · C++ 插件</dd></div>
+          <div data-reveal><dt class="label">Stack</dt><dd>PyTorch DDP / bf16 / LoRA · DINOv2 · LuisaCompute · MCP Agent</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <div class="container">
+      <figure>
+        <div class="cover" style="--ratio: 3 / 1" data-reveal="media">
+          <img src="../assets/ailight-cover.jpg" alt="同一镜头的引擎合成画面、基色与深度：引擎在延迟渲染中直接给出精确的分解" />
+        </div>
+        <figcaption class="cover-caption label">
+          <span>Composite / Base Color / Depth</span>
+          <span>引擎直接给出的精确分解</span>
+        </figcaption>
+      </figure>
+
+      <div class="stats" data-stagger="0.08">
+        <div class="stat" data-reveal>
+          <span class="stat-value">28.3° <i>→</i> 9.25°</span>
+          <p>太阳方向误差（域内），中位 6.02°</p>
+        </div>
+        <div class="stat" data-reveal>
+          <span class="stat-value">0.965 <i>→</i> 0.995</span>
+          <p>太阳存在性 F1（域内）</p>
+        </div>
+        <div class="stat" data-reveal>
+          <span class="stat-value">100% <small>/ 13.2°</small></span>
+          <p>整张未见场景：太阳存在识别率 / 方向中位误差</p>
+        </div>
+        <div class="stat" data-reveal>
+          <span class="stat-value">×2.5</span>
+          <p>DDP + bf16 训练提速；TF32 下主干前向 439 → 240 ms</p>
+        </div>
+        <div class="stat" data-reveal>
+          <span class="stat-value">15 <small>/ 8000+</small></span>
+          <p>训练场景 / 对齐样本</p>
+        </div>
+        <div class="stat" data-reveal>
+          <span class="stat-value">≤ 0.53%</span>
+          <p>自建离线渲染器：99% 像素与解析解的误差不超过峰值的 0.53%</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="case-body container">
+      <!-- 01 -->
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">01 — Problem</span>
+            <h2 data-reveal>引擎里的光照层，<br>不是一张图</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <p>
+              思路来自 RGB↔X 与 DiffusionRenderer：图像先分解成 albedo、normal、光照等层，只改光照层，再合成回去。
+              搬进引擎后两端都“免费”了：<strong>分解</strong>就是延迟渲染的 G-buffer，而且是精确值；<strong>合成</strong>就是引擎渲染器本身。
+            </p>
+            <p>
+              新问题在中间：引擎的光照是一组<strong>离散的灯光 Actor</strong>，数量不定、参数繁多，没法逐像素编辑；
+              意图和参数之间也没有直接映射，结果还必须落回美术能继续调的灯。于是把它拆成两个各自可解的网络。
+            </p>
+          </div>
+        </div>
+
+        <div class="block-wide" data-reveal>
+          <ol class="chain chain--4" aria-label="AI 场景打光系统链路">
+            <li class="chain-step"><span class="label">Input</span><h3>意图 + G-buffer</h3><p>文本或参考图，加上引擎截取的法线、深度、基色、粗糙度、金属度。</p></li>
+            <li class="chain-step"><span class="label">Relight</span><h3>想要什么光</h3><p>在图像域利用生成先验，输出与几何材质对齐的目标光照图。</p></li>
+            <li class="chain-step is-mine"><span class="label">LightExtractor · 我的主线</span><h3>用哪些灯打出来</h3><p>从图中的光照证据反推太阳、天空与局部灯的显式参数。</p></li>
+            <li class="chain-step"><span class="label">UE5</span><h3>部署与验证</h3><p>灯光写回场景，由引擎渲染，美术继续微调。</p></li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- 02 -->
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">02 — Data</span>
+            <h2 data-reveal>画面、G-buffer 与<br>灯光真值严格对齐</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <p>
+              我改造了 UE 采集插件。每个样本包含 RAW HDR 合成图、关掉所有灯的环境光通道、<strong>逐灯 OLAT</strong>（每次只开一盏灯）、
+              五通道 G-buffer，以及灯光参数和相机元数据。
+            </p>
+          </div>
+          <div class="gallery gallery--3" data-stagger="0.06">
+            <figure class="shot" data-reveal="media">
+              <div class="shot-media" style="--ratio: 1 / 1"><img src="../assets/ailight-s-composite.jpg" alt="合成图" loading="lazy" /></div>
+              <figcaption class="label"><span>Composite</span><span>I</span></figcaption>
+            </figure>
+            <figure class="shot" data-reveal="media">
+              <div class="shot-media" style="--ratio: 1 / 1"><img src="../assets/ailight-s-ambient.jpg" alt="环境光通道" loading="lazy" /></div>
+              <figcaption class="label"><span>Ambient</span><span>A</span></figcaption>
+            </figure>
+            <figure class="shot" data-reveal="media">
+              <div class="shot-media" style="--ratio: 1 / 1"><img src="../assets/ailight-s-olat.jpg" alt="太阳的单灯贡献" loading="lazy" /></div>
+              <figcaption class="label"><span>OLAT · Sun</span><span>L − A</span></figcaption>
+            </figure>
+            <figure class="shot" data-reveal="media">
+              <div class="shot-media" style="--ratio: 1 / 1"><img src="../assets/ailight-s-albedo.jpg" alt="基色" loading="lazy" /></div>
+              <figcaption class="label"><span>Base Color</span></figcaption>
+            </figure>
+            <figure class="shot" data-reveal="media">
+              <div class="shot-media" style="--ratio: 1 / 1"><img src="../assets/ailight-s-normal.jpg" alt="世界空间法线" loading="lazy" /></div>
+              <figcaption class="label"><span>World Normal</span></figcaption>
+            </figure>
+            <figure class="shot" data-reveal="media">
+              <div class="shot-media" style="--ratio: 1 / 1"><img src="../assets/ailight-s-depth.jpg" alt="深度" loading="lazy" /></div>
+              <figcaption class="label"><span>Depth</span></figcaption>
+            </figure>
+          </div>
+
+          <div class="prose" data-reveal>
+            <p>
+              OLAT 让光照可以在线性 HDR 域里自由重组：改变权重 <code>w</code>，同一次采集就能衍生出不同强度的照明变体。
+              下面是一张真实样本在浏览器里实时重组的结果。
+            </p>
+          </div>
+          <figure class="relight" data-relight data-reveal>
+            <div class="relight-media">
+              <img src="../assets/ailight-relight.jpg" alt="Abandoned Cathedral 场景的太阳光照样本" loading="lazy" />
+              <canvas data-amb="../assets/ailight-relight-amb.png" data-sun="../assets/ailight-relight-sun.png" aria-hidden="true"></canvas>
+            </div>
+            <figcaption class="relight-panel">
+              <span class="label">Sun Weight — Live OLAT Recombination</span>
+              <span class="relight-value">w = <span data-relight-value>1.00</span></span>
+              <span class="relight-formula">I = A + w · max(L − A, 0)</span>
+              <input type="range" min="0" max="200" value="100" aria-label="调整太阳 OLAT 权重" />
+              <div class="relight-ticks" aria-label="训练中使用的四档权重">
+                <button type="button" data-w="0.3">0.3</button>
+                <button type="button" data-w="0.5">0.5</button>
+                <button type="button" data-w="1">1.0</button>
+                <button type="button" data-w="1.5">1.5</button>
+              </div>
+            </figcaption>
+          </figure>
+
+          <div class="sub-grid" data-stagger="0.08">
+            <article class="sub" data-reveal>
+              <span class="label">Contract</span>
+              <h3>统一数据契约</h3>
+              <div class="prose"><p>训练用 RAW 固定为 512² 无头 float32 并附元数据；灯光带稳定 <code>light_id</code> 与 schema 版本，支持保留 / 删除 / 替换 / 新增与单步撤销。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Randomize</span>
+              <h3>全局光随机化与连续采集</h3>
+              <div class="prose"><p>仰角 0–90°、照度 3–60 lux、色温 2500–10000 K，种子可固定；锁定视口后循环“随机化 → 刷新 → 采集”。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Camera</span>
+              <h3>自动机位采样</h3>
+              <div class="prose"><p>人眼、低位、高位、近景、极端角度五类机位，配合地板射线、净空检测与可见性统计过滤不合格镜头。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Deploy</span>
+              <h3>采集与部署共用内核</h3>
+              <div class="prose"><p>抽出共用的灯光重建内核，删掉部署插件里近千行分叉实现；预测灯保持 Movable，不破坏场景原有灯光。</p></div>
+            </article>
+          </div>
+
+          <figure data-reveal="media">
+            <div class="cover" style="--ratio: 3 / 1">
+              <img src="../assets/ailight-scenes.jpg" alt="训练数据覆盖的部分 UE 场景" loading="lazy" />
+            </div>
+            <figcaption class="cover-caption label">
+              <span>Training Scenes — 节选</span>
+              <span>15 Scenes · 8000+ Samples</span>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- 03 -->
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">03 — Architecture</span>
+            <h2 data-reveal>固定槽位，<br>光度走旁路</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <p>团队已有 DINOv2-L 主干与局部光解码器，但全局光（太阳与天空）有三个结构性问题，我逐一对应改动：</p>
+          </div>
+          <div class="table" data-reveal>
+            <table>
+              <thead><tr><th>旧路径的问题</th><th>后果</th><th>对策</th></tr></thead>
+              <tbody>
+                <tr><td>太阳作为第四类局部灯参与集合匹配</td><td>匹配一错，梯度落到错误的 query</td><td>两个固定全局槽位，不做匹配</td></tr>
+                <tr><td>HDR 先 Reinhard 压到 0–1 再进冻结主干</td><td>强度数量级几乎不可见</td><td>线性 HDR 单独走一条光度通路</td></tr>
+                <tr><td>强度标签用 UE 面板 Lux</td><td>跨场景能量对不上，学成训练集均值</td><td>改用画面上可测的能量</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="code" data-reveal>
+            <div class="code-head label"><span>global_local_v2 · Data Flow</span><span>Diagram</span></div>
+<pre><code>rgb        : Reinhard LDR   ──► 冻结 DINOv2 + LoRA(Q/V, r=16)   语义与几何
+rgb_linear : log1p(HDR)     ──► 光度 / 亮度 adapter             数量级与强度
+gbuffer    : 9 ch           ──► G-buffer adapter
+
+fused = FusionEncoder(cat([global_tokens, geo_tokens]))
+sun   = fused[:, 0]    sky = fused[:, 1]    local_memory = fused[:, 2:]</code></pre>
+          </div>
+          <div class="sub-grid" data-stagger="0.08">
+            <article class="sub" data-reveal>
+              <span class="label">Dual Path</span>
+              <h3>LDR 保语义，HDR 保光度</h3>
+              <div class="prose"><p>DINOv2 在 LDR 自然图像上预训练，硬喂 HDR 会让特征漂移；训练、评测、推理和在线服务四条路径必须共用同一套拆分。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Pitfall</span>
+              <h3>冻结主干会连带冻住 LoRA</h3>
+              <div class="prose"><p>冻结之后必须重新打开 LoRA 梯度；权重键名不变，旧权重用 <code>strict=False</code> 加载，新增模块从零开始训练。</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- 04 -->
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">04 — Supervision</span>
+            <h2 data-reveal>监督画面能量，<br>而不是面板数值</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <p>
+              这是整个训练里最重要的一次决策。面板 Lux 描述的是灯本身，同一个 Lux 打在白墙和黑石头上画面完全不同，
+              网络从单张图里学不出这个映射。所以强度目标改成<strong>画面上测得出的能量</strong>，推理时再用镜头的单位太阳响应换算回 Lux。
+            </p>
+          </div>
+          <div class="code" data-reveal>
+            <div class="code-head label"><span>Targets &amp; Calibration</span><span>Math</span></div>
+<pre><code>sun_target = log mean(max(I − A, 0))   // 与 OLAT 权重同一尺度
+sky_target = log mean(A)               // 不混入太阳能量
+
+ŵ   = Ê / k                            // k：该镜头的单位太阳响应
+Lux̂ = ŵ · L0                           // 真值回代误差 ≈ 6e-8</code></pre>
+          </div>
+          <div class="sub-grid" data-stagger="0.08">
+            <article class="sub" data-reveal>
+              <span class="label">Observability</span>
+              <h3>存在性 ≠ 可观测性</h3>
+              <div class="prose"><p>残差能量低于 0.001 的帧只监督“有没有太阳”和方向。灯还在，只是这一帧看不清，不能改标成“无太阳”。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Loss Scale</span>
+              <h3>尺度把梯度压小了 18 倍</h3>
+              <div class="prose"><p>标签落在 −4 到 0，原配置近似 <code>H(d/3)</code>；改为 <code>2·H(d)</code> 后，小误差区间的损失比可达 18 倍。调权重要看对共享编码器的梯度贡献。</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- 05 -->
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">05 — Iteration</span>
+            <h2 data-reveal>每轮只改一个因素</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="table" data-reveal>
+            <table>
+              <thead><tr><th>轮次</th><th>改动</th><th>结果</th></tr></thead>
+              <tbody>
+                <tr><td>r0</td><td>全局光跑通，强度仍对面板标签</td><td>存在 F1 0.965，角误差 28.3°</td></tr>
+                <tr><td>r1</td><td>改为能量监督，加亮度图与 LoRA</td><td>角误差 23.8°，太阳 log MAE 0.483</td></tr>
+                <tr><td>r2</td><td>只降学习率</td><td>0.486，未超过 r1（负结果）</td></tr>
+                <tr><td>r3</td><td>开启低残差过滤</td><td>0.564，强度变差（负结果）</td></tr>
+                <tr><td>r4</td><td>强度尺度 3 → 1，权重 1 → 2</td><td>太阳 log MAE 0.471</td></tr>
+                <tr class="is-key"><td>r5</td><td>场景内打乱切分，新增 5 个场景</td><td>角误差 9.25° / 6.02°，log MAE 0.210，F1 0.995</td></tr>
+                <tr><td>r6</td><td>新采泛化图并入训练</td><td>三套留出集总损失全部低于 r5</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="prose" data-reveal>
+            <p>训练跑在双卡 H20 上：DataParallel 改为 DDP + bf16，提速约 2.5 倍；只由 rank 0 写权重，早停多卡同步；数据与权重走 Git LFS，新 clone 即可开训。</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 06 -->
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">06 — Evaluation</span>
+            <h2 data-reveal>先问指标在测什么</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <p>
+              r5 的域内指标出现大跃升。继续推进之前，我解析了全部 1650 次采集的相机元数据，回头查这个数字到底在测什么。
+            </p>
+          </div>
+          <div class="sub-grid" data-stagger="0.08">
+            <article class="sub" data-reveal>
+              <span class="label">Leakage</span>
+              <h3>验证视角 100% 泄漏</h3>
+              <div class="prose"><p>验证集的 95 个视角全部出现在训练集。它测的是“同镜头换照明”，不是“换镜头、换场景”。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Saturated</span>
+              <h3>满分指标没有区分度</h3>
+              <div class="prose"><p>天空始终开启、有太阳时阴影全开、光色只有三四种，“100%”说明不了模型学会了什么。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Closed Loop</span>
+              <h3>UE 闭环在字段上就断了</h3>
+              <div class="prose"><p>预测写在 <code>global_predictions</code>，重建器读的是 <code>lights</code>，且缺天空光分支。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Bottleneck</span>
+              <h3>瓶颈是信息量，不是容量</h3>
+              <div class="prose"><p>全集只有约 100 个独立视角。结论是不换更大主干，先用自动机位采样补新镜头。</p></div>
+            </article>
+          </div>
+          <div class="prose" data-reveal>
+            <p>据此新建三套<strong>不参与训练、也不参与选权重</strong>的永久留出集。r6 的结果：</p>
+          </div>
+          <div class="table" data-reveal>
+            <table>
+              <thead><tr><th>留出集</th><th>样本</th><th>总损失 r5 → r6</th><th>太阳存在</th><th>方向误差 均值 / 中位</th></tr></thead>
+              <tbody>
+                <tr><td>已有场景 · 新镜头 A</td><td>50</td><td>2.942 → 1.663</td><td>82%</td><td>20.2° / 16.4°</td></tr>
+                <tr><td>已有场景 · 新镜头 B</td><td>25</td><td>1.410 → 0.591</td><td>100%</td><td>13.8° / 7.9°</td></tr>
+                <tr class="is-key"><td>整张未见场景</td><td>200</td><td>1.036 → 0.594</td><td>100%</td><td>17.0° / 13.2°</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 07 -->
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">07 — Offline Renderer</span>
+            <h2 data-reveal>在没有 RT Core 的<br>计算卡上做无偏 OLAT</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <p>
+              下一期的局部光监督依赖逐灯 OLAT：一个镜头可能保留 48 盏灯，就是 N + 2 次 256 spp 的完整渲染；
+              而 OLAT 要能可靠相加，必须是<strong>无偏路径追踪</strong>，UE 的实时 GI 保证不了。计算量只能交给 H20，
+              但它没有 RT Core、图形 API 和显示输出，现成渲染器基本跑不起来。于是我基于 LuisaCompute 自建了一条纯计算管线。
+            </p>
+            <ul>
+              <li><strong>软件路径追踪</strong>：LBVH 宽节点遍历，多卡按行切分，megakernel 与 wavefront 共用着色代码，Principled BSDF 与 bindless 纹理。</li>
+              <li><strong>内容寻址资产库</strong>：网格、材质、纹理按规范化内容哈希入库，多场景共享，原子写入。</li>
+              <li><strong>DCC 导出</strong>：Houdini / Blender 程序化场景导出；产出的 G-buffer、ambient、OLAT、composite 与 UE 采集<strong>格式完全一致</strong>。</li>
+            </ul>
+          </div>
+          <div class="table" data-reveal>
+            <table>
+              <thead><tr><th>验证项</th><th>结果</th></tr></thead>
+              <tbody>
+                <tr><td>与解析解对比（点光 / 聚光 / 方向光 / 遮挡）</td><td>99% 像素误差 ≤ 峰值的 0.53%</td></tr>
+                <tr><td>白炉测试（漫反射 / 电介质 / 粗糙金属 / 光滑金属）</td><td>1.000 / 0.997 / 0.985 / 0.999，无能量增益</td></tr>
+                <tr><td>资产库路径 vs 原路径</td><td>输出 EXR 逐字节相同</td></tr>
+                <tr><td>网格加载</td><td>171 ms → 9 ms，13.3 MB → 4.7 MB</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 08 -->
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">08 — Relight Agent</span>
+            <h2 data-reveal>让 Agent 在引擎里<br>真正动手打光</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <p>
+              Relight 的前提是回答“什么样的光才算对”。我把 UE MCP 封装成命令行工具 <code>uectl</code>：只开放打光命令、截图落盘只返回路径、
+              多步操作打包一次执行、单条输出不超过 16 KB，再让 Agent 按强制流程实际打光，把经验沉淀成可执行的范式。
+            </p>
+          </div>
+          <div class="code" data-reveal>
+            <div class="code-head label"><span>Lighting Workflow</span><span>Enforced</span></div>
+<pre><code>看现场 → 量窗户 → 检索案例 → 写方案并检查 → 征得同意
+      → 改灯（保存旧值，新灯打标签）→ 截图验收 ≤ 3 轮 → 必要时回滚</code></pre>
+          </div>
+          <div class="sub-grid" data-stagger="0.08">
+            <article class="sub" data-reveal>
+              <span class="label">Rules · 怎么描述</span>
+              <h3>打光规则</h3>
+              <div class="prose"><p>太阳照度换算、晴 / 阴 / 雨 / 雾 / 夜 22 档预设、主补光比 4–8 倍、同空间色温差 ≤ 1000 K。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Cases · 参考什么</span>
+              <h3>77 条案例库</h3>
+              <div class="prose"><p>照片逆向 44 条、规则生成 33 条；标签筛选 + BM25 检索，方案必须以命中案例的参数为基础。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Rubric · 怎么评价</span>
+              <h3>五项验收量表</h3>
+              <div class="prose"><p>主体可读、光比层次、色温和谐、曝光、逻辑一致，每项 1–5 分，对应生成结果的验收标准。</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- 09 -->
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">09 — Reflection</span>
+            <h2 data-reveal>局限与收获</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <ul>
+              <li>新镜头 A 仍未达标（太阳存在 82%），换镜头后的泛化不稳定；未见场景的能量误差约为域内两倍。</li>
+              <li>全局光预测尚未完整写回 UE；局部光分支与 Relight 网络还没开训，项目处于研发阶段。</li>
+            </ul>
+          </div>
+          <div class="sub-grid" data-stagger="0.08">
+            <article class="sub" data-reveal>
+              <span class="label">01</span>
+              <h3>先问指标在测什么</h3>
+              <div class="prose"><p>r5 的大跃升最终被证明只是同镜头插值。没回头查这一步，后续投入会全部偏掉。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">02</span>
+              <h3>监督网络能观测到的量</h3>
+              <div class="prose"><p>面板 Lux 对人有意义、对网络不可观测；画面能量可观测，再标定换算回 Lux。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">03</span>
+              <h3>用可重复的证据证明正确</h3>
+              <div class="prose"><p>解析解、白炉测试、逐字节回归，比“看起来对”可靠得多。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Next</span>
+              <h3>补独立信息，而不是复制数据</h3>
+              <div class="prose"><p>打通“预测 → 重建 → 截图 → 对比”的 UE 闭环，以重渲染误差为最终验收；局部光开训。</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="container">
+      <a class="next" href="lumen-like-gi.html">
+        <span class="label">Next Project — 02</span>
+        <span class="next-title"><span>Lumen-like 动态全局光照</span><span aria-hidden="true">→</span></span>
+      </a>
+    </div>
+  </main>
+
+  <footer class="site-footer container label">
+    <span>© <span data-year>2026</span> Chen Nuo</span>
+    <span>Technical Art · Real-Time Rendering</span>
+    <a class="roll" href="#top"><span data-text="回到顶部 ↑">回到顶部 ↑</span></a>
+  </footer>
+</body>
+</html>

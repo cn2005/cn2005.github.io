@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Lumen-like 动态全局光照：基于 Unity URP Deferred 重构的实时 GI 管线，包含 SSRT、Mesh / World SDF、Surface Cache、Screen / World Probe 与 Temporal GI。" />
+  <meta name="theme-color" content="#0a0a0b" />
+  <title>Lumen-like 动态全局光照 · 陈诺</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0b'/%3E%3Ccircle cx='32' cy='32' r='12' fill='%23f0643a'/%3E%3C/svg%3E" />
+  <script>document.documentElement.classList.add("js");</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" media="print" onload="this.media='all'" />
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body id="top">
+  <div class="curtain" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="progress" aria-hidden="true"></div>
+  <a class="skip" href="#main">跳到主要内容</a>
+
+  <header class="site-header" data-header>
+    <a class="brand" href="../index.html" aria-label="陈诺 · 回到首页">
+      <span class="brand-name">陈诺</span>
+      <span class="brand-role">Chen Nuo — Technical Artist</span>
+    </a>
+    <nav class="nav" aria-label="主导航">
+      <a class="roll" href="../index.html#work"><span data-text="作品">作品</span></a>
+      <a class="roll" href="../index.html#about"><span data-text="关于">关于</span></a>
+      <a class="roll" href="../index.html#method"><span data-text="方法">方法</span></a>
+      <a class="roll" href="../index.html#contact"><span data-text="联系">联系</span></a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="case-hero container">
+      <a class="back" href="../index.html#work">返回作品</a>
+      <p class="label" data-reveal>Featured 02 — Real-Time Global Illumination</p>
+      <h1 class="case-title case-title--sm" data-reveal="lines">
+        <span class="line"><span>Lumen-like</span></span>
+        <span class="line"><span>动态全局光照</span></span>
+      </h1>
+      <div class="case-intro">
+        <p class="case-lead" data-reveal>
+          在 Unity URP Deferred 上重构的一套实时 GI 管线。不复制某个单独算法，而是复刻 Lumen 的系统思路：
+          屏幕空间先行，距离场兜底，缓存复用辐射，时域稳定画面。
+        </p>
+        <dl class="meta" data-stagger="0.06">
+          <div data-reveal><dt class="label">Course</dt><dd>计算机图形学 · 结课项目</dd></div>
+          <div data-reveal><dt class="label">Engine</dt><dd>Unity 2022.3 / URP 14 Deferred</dd></div>
+          <div data-reveal><dt class="label">Stack</dt><dd>C# / HLSL / Compute Shader</dd></div>
+          <div data-reveal><dt class="label">Core</dt><dd>SSRT / SDF / Surface Cache / Probe / Temporal</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <div class="container">
+      <figure>
+        <div class="cover" style="--ratio: 1230 / 783" data-reveal="media">
+          <img src="../assets/lumen-cover.jpg" alt="Gothic Interior 场景中的 Lumen-like 实时全局光照效果" data-parallax="0.08" />
+        </div>
+        <figcaption class="cover-caption label">
+          <span>Gothic Interior — Lumen-like GI On</span>
+          <span>Unity URP Deferred</span>
+        </figcaption>
+      </figure>
+    </div>
+
+    <div class="case-body container">
+      <!-- 01 -->
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">01 — Philosophy</span>
+            <h2 data-reveal>少采样、多表达、强复用</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <p>
+              Lumen 的价值不在某个单点技巧，而在于把实时全局光照改写成一套<strong>采样预算管理系统</strong>：
+              优先使用便宜且已有的数据，把几何和辐射压缩成可查询的表达，用置信度决定是否 fallback，
+              再通过时域复用把结果扩展到下一帧。
+            </p>
+            <p>
+              Screen Trace、SDF、Surface Cache、Probe 与 Temporal 不是互相竞争的方案，而是不同层级的“采样减少器”。
+            </p>
+          </div>
+        </div>
+
+        <div class="block-wide" data-reveal>
+          <ol class="chain" aria-label="Lumen-like GI 求解链路">
+            <li class="chain-step"><span class="label">01</span><h3>GBuffer</h3><p>Depth / Normal / Motion / Material，提供可见表面。</p></li>
+            <li class="chain-step"><span class="label">02</span><h3>Screen Trace</h3><p>用屏幕深度廉价获得第一层命中。</p></li>
+            <li class="chain-step"><span class="label">03</span><h3>Mesh + World SDF</h3><p>置信度不足时，补足屏幕外几何。</p></li>
+            <li class="chain-step"><span class="label">04</span><h3>Surface Cache</h3><p>命中后查询 card atlas，不再重新着色。</p></li>
+            <li class="chain-step"><span class="label">05</span><h3>Probe Gather</h3><p>Screen / World Probe 共享低频光照。</p></li>
+            <li class="chain-step"><span class="label">06</span><h3>Temporal</h3><p>重投影、验证、clamp，把采样摊到多帧。</p></li>
+          </ol>
+          <div class="axes">
+            <span class="label">Reuse Axes</span>
+            <div class="tags"><span>Space — Probes / Clipmaps</span><span>Surface — Cards / Atlases</span><span>Direction — Octahedral / SH</span><span>Time — History Frames</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 02 -->
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">02 — Tracing</span>
+            <h2 data-reveal>屏幕追踪先行，<br>距离场兜底</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <p>
+              自定义 GI 以 <code>ScriptableRendererFeature</code> 注入 URP Deferred，直接复用 Depth、Motion 与 GBuffer。
+              SSRT 优先命中屏幕内几何；命中失败或置信度过低时切换到 SDF hybrid，减少空射和屏幕边缘漏光。
+            </p>
+          </div>
+          <div class="code" data-reveal>
+            <div class="code-head label"><span>LumenLikeGI.hlsl</span><span>HLSL</span></div>
+<pre><code>trace = TraceSSRT(...);
+if (trace.hit &lt; 0.5h || trace.confidence &lt; 0.22h)
+    trace = TraceSDFHybrid(...);</code></pre>
+          </div>
+          <div class="sub-grid" data-stagger="0.1">
+            <article class="sub" data-reveal>
+              <span class="label">Mesh SDF</span>
+              <h3>近处细节：网格距离场烘焙</h3>
+              <div class="prose">
+                <p>Baker 在每个 voxel 上遍历三角形求最近距离，并累加立体角 winding 判断内外，结果写入 Texture3D。</p>
+              </div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">World SDF</span>
+              <h3>远处兜底：3 级 Clipmap</h3>
+              <div class="prose">
+                <p>以相机为中心 snapping 的 3 级 clipmap，把多个对象合成全局距离场；先用 expanded AABB 粗剔除，再取最小距离。</p>
+              </div>
+            </article>
+          </div>
+          <div class="code" data-reveal>
+            <div class="code-head label"><span>LumenLikeMeshSDFBaker.cs</span><span>C#</span></div>
+<pre><code>closest    = ClosestPointOnTriangle(samplePoint, a, b, c);
+minDistSq  = min(minDistSq, dot(delta, delta));
+signedDist = winding &gt; insideThreshold
+           ? -sqrt(minDistSq)
+           :  sqrt(minDistSq);</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- 03 -->
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">03 — Surface Cache</span>
+            <h2 data-reveal>把命中着色变成一次查询</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <p>
+              Surface Cache 解决的不是“怎么求交”，而是“求交以后怎么办”。每次命中都重新执行材质、阴影和多次反弹，
+              GI 成本会重新爆炸；把这些结果预先捕获到 atlas 中，命中后只需采样。
+            </p>
+            <ul>
+              <li>每个对象最多 <strong>6</strong> 张 card，总上限 <strong>72</strong> 张。</li>
+              <li><strong>MaterialAtlas</strong> 缓存 albedo，<strong>NormalAtlas</strong> 校验法线一致性，<strong>RadianceAtlas</strong> 保存直接光、天空光、自发光与间接项。</li>
+              <li>对象状态记录 captured mask 与 age，判断缓存是否完整或过期。</li>
+            </ul>
+          </div>
+          <div class="code" data-reveal>
+            <div class="code-head label"><span>Card Lookup</span><span>HLSL</span></div>
+<pre><code>if (!objectStatus.hasCards || objectStatus.age &gt; maxAge)
+    return false;
+
+for (card in objectCards) {
+    if (dot(hitNormal, cardNormal) &lt; normalThreshold) continue;
+    faceUV  = ProjectToCardUV(hitPosition, cardBasis);
+    score   = normalDot - planePenalty * 0.15;
+    atlasUV = (tileOrigin + clamp(faceUV, inset, 1 - inset)) / tilesPerRow;
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- 04 -->
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">04 — Probes &amp; Voxel Radiance</span>
+            <h2 data-reveal>低频光照的空间共享</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="sub-grid" data-stagger="0.1">
+            <article class="sub" data-reveal>
+              <span class="label">Screen Probe</span>
+              <h3>从每像素采样到屏幕共享</h3>
+              <div class="prose">
+                <p>屏幕划成稀疏 probe 网格，方向辐射以 octahedral atlas 与 SH-L1 存储。质量预设用 probe spacing 与 octahedral 分辨率，在空间密度和方向密度之间分配预算。</p>
+              </div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">World Probe</span>
+              <h3>屏幕外的低频记忆</h3>
+              <div class="prose">
+                <p>相机周围的 3D radiance grid，snapping 保持空间稳定，按 updateBudget 逐帧刷新；混合上一轮 voxel radiance、天空光与 probe history 作为 miss 兜底。</p>
+              </div>
+            </article>
+          </div>
+          <div class="prose" data-reveal>
+            <p>
+              World SDF 也被扩展成带辐射的 clipmap：只有落在表面带内的 voxel 写入 radiance，
+              并读回上一轮结果形成受限的多次反弹近似。
+            </p>
+          </div>
+          <div class="code" data-reveal>
+            <div class="code-head label"><span>LumenLikeWorldSDF.compute</span><span>Compute</span></div>
+<pre><code>signedDistance = min(sourceDistance over culled sources);
+WorldSDF[id]   = clamp(signedDistance, -maxDistance, maxDistance);
+
+if (abs(signedDistance) &lt;= radianceBand)
+    VoxelRadiance[id] = DirectRadiance
+                      + Albedo * PreviousRadiance * bounceGain;</code></pre>
+          </div>
+          <div class="gallery" data-stagger="0.12">
+            <figure class="shot" data-reveal="media">
+              <div class="shot-media" style="--ratio: 1055 / 672"><img src="../assets/lumen-screen-probe.jpg" alt="Screen Probe 调试视图" loading="lazy" /></div>
+              <figcaption class="label"><span>Debug — Screen Probe</span><span>Probe Grid</span></figcaption>
+            </figure>
+            <figure class="shot" data-reveal="media">
+              <div class="shot-media" style="--ratio: 1055 / 672"><img src="../assets/lumen-world-sdf.jpg" alt="World SDF 调试视图" loading="lazy" /></div>
+              <figcaption class="label"><span>Debug — World SDF</span><span>Clipmap</span></figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <!-- 05 -->
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">05 — Temporal</span>
+            <h2 data-reveal>时域摊销与历史验证</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="prose" data-reveal>
+            <p>
+              GI 以低分辨率、每像素 1–4 条射线计算，再靠时域累积压低噪声。历史帧不是简单混回：
+              先用 motion vector 重投影，再用 depth / normal 判断有效性，最后用邻域 clamp 防止错误历史扩散，
+              之后经 bilateral filter 上采样回相机分辨率。
+            </p>
+          </div>
+          <div class="code" data-reveal>
+            <div class="code-head label"><span>Temporal GI</span><span>HLSL</span></div>
+<pre><code>historyUV = currentUV - motionVector;
+valid     = inside &amp;&amp; depthClose &amp;&amp; normalClose;
+history   = ClampHistoryToRawNeighborhood(history);
+GI        = lerp(currentGI, historyGI, historyWeight * valid);</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- 06 -->
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">06 — Results</span>
+            <h2 data-reveal>效果与中间结果</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <figure data-reveal>
+            <div class="compare" style="--ratio: 656 / 369" data-compare>
+              <img src="../assets/lumen-gi-on.jpg" alt="GI 开启" />
+              <div class="compare-top"><img src="../assets/lumen-gi-off.jpg" alt="GI 关闭" /></div>
+              <span class="compare-line" aria-hidden="true"></span>
+              <span class="compare-tag compare-tag--l label">GI Off</span>
+              <span class="compare-tag compare-tag--r label">GI On</span>
+              <input type="range" min="0" max="100" value="50" aria-label="拖动对比 GI 关闭与开启" />
+            </div>
+            <figcaption class="cover-caption label">
+              <span>Drag — GI Off / On</span>
+              <span>暗部层次 · 柱体边缘 · 远处墙面</span>
+            </figcaption>
+          </figure>
+
+          <figure class="shot" style="max-width: 620px" data-reveal="media">
+            <div class="shot-media" style="--ratio: 900 / 826"><img src="../assets/lumen-cornell.jpg" alt="Cornell Box 基准场景：红绿墙颜色反弹与顶部面积光" loading="lazy" /></div>
+            <figcaption class="label"><span>Cornell Box — 颜色反弹与接触阴影</span><span>Baseline</span></figcaption>
+          </figure>
+
+          <div class="gallery gallery--3" data-stagger="0.1">
+            <figure class="shot" data-reveal="media">
+              <div class="shot-media" style="--ratio: 16 / 9"><img src="../assets/lumen-buffer-raw.jpg" alt="Raw GI 中间缓冲" loading="lazy" /></div>
+              <figcaption class="label"><span>Raw GI</span></figcaption>
+            </figure>
+            <figure class="shot" data-reveal="media">
+              <div class="shot-media" style="--ratio: 16 / 9"><img src="../assets/lumen-buffer-cache.jpg" alt="Surface Cache 覆盖中间缓冲" loading="lazy" /></div>
+              <figcaption class="label"><span>Surface Cache</span></figcaption>
+            </figure>
+            <figure class="shot" data-reveal="media">
+              <div class="shot-media" style="--ratio: 16 / 9"><img src="../assets/lumen-buffer-ssrt.jpg" alt="SSRT 步进次数中间缓冲" loading="lazy" /></div>
+              <figcaption class="label"><span>SSRT Step Count</span></figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <!-- 07 -->
+      <section class="block">
+        <div class="block-head">
+          <div>
+            <span class="label">07 — Debugging</span>
+            <h2 data-reveal>开发问题与修复</h2>
+          </div>
+        </div>
+        <div class="block-body">
+          <div class="sub-grid" data-stagger="0.08">
+            <article class="sub" data-reveal>
+              <span class="label">Self-Intersection</span>
+              <h3>Z-fighting 与自交</h3>
+              <div class="prose"><p>射线起点贴近表面导致自命中。起点沿法线偏移，并在 SSRT 中加入 thickness、facing 与 edge fade 验证。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">NaN</span>
+              <h3>Total SDF 全白闪烁</h3>
+              <div class="prose"><p>近零缩放对象产生不可逆矩阵，SDF 查询出现 NaN。扫描时跳过退化变换，shader 中增加 NaN / Inf 防御。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Stability</span>
+              <h3>静态画面仍闪烁</h3>
+              <div class="prose"><p>候选体同分排序不稳定，纹理数组 slot 帧间跳动。改为按 Score + InstanceID 做确定性排序。</p></div>
+            </article>
+            <article class="sub" data-reveal>
+              <span class="label">Leaking</span>
+              <h3>屏幕边缘漏光</h3>
+              <div class="prose"><p>SSRT 看不到屏幕外几何。低置信命中统一进入 TraceSDFHybrid fallback。</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="container">
+      <a class="next" href="tinyrenderer.html">
+        <span class="label">Next Project — 03</span>
+        <span class="next-title"><span>tinyrenderer</span><span aria-hidden="true">→</span></span>
+      </a>
+    </div>
+  </main>
+
+  <footer class="site-footer container label">
+    <span>© <span data-year>2026</span> Chen Nuo</span>
+    <span>Technical Art · Real-Time Rendering</span>
+    <a class="roll" href="#top"><span data-text="回到顶部 ↑">回到顶部 ↑</span></a>
+  </footer>
+</body>
+</html>
